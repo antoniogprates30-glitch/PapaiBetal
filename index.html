@@ -3,361 +3,237 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kazulu - Miles Morales Edition</title>
+    <title>RedLuck - Cassino Fictício</title>
     <style>
+        /* CSS - O Visual do Jogo */
         :root {
-            --spider-red: #e62429;
-            --spider-black: #121212;
-            --spider-blue: #001df5;
-            --gold: #ffd700;
+            --primary-red: #e74c3c;
+            --dark-red: #c0392b;
+            --bg-dark: #1a1a1a;
+            --hud-bg: #252525;
+            --text-white: #ecf0f1;
         }
 
         body {
-            background-color: var(--spider-black);
-            color: white;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-white);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Top Bar - Saldo */
+        .top-bar {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            background: var(--hud-bg);
+            padding: 10px 20px;
+            border-radius: 50px;
+            border: 2px solid var(--primary-red);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        /* HUD Esquerdo - Menu */
+        .sidebar {
+            width: 200px;
+            background-color: var(--hud-bg);
+            border-right: 3px solid var(--primary-red);
             display: flex;
             flex-direction: column;
-            align-items: center;
-            background-image: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
-            min-height: 100vh;
+            padding: 20px 0;
         }
 
-        h1 {
-            color: var(--spider-red);
-            text-shadow: 3px 3px 0px var(--spider-blue), 5px 5px 15px rgba(230, 36, 41, 0.5);
-            font-size: 3rem;
-            margin: 20px 0;
-            text-transform: uppercase;
-            letter-spacing: 5px;
-        }
-
-        /* HUD DE SALDO E APOSTA */
-        .hud {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 20px;
-            border-radius: 20px;
-            border: 2px solid var(--spider-red);
-            backdrop-filter: blur(10px);
-            margin-bottom: 20px;
-            text-align: center;
-            box-shadow: 0 0 20px rgba(230, 36, 41, 0.2);
-        }
-
-        .balance { font-size: 1.5rem; color: var(--gold); margin-bottom: 10px; }
-        .bet-display { font-size: 1.2rem; margin-bottom: 15px; }
-
-        /* BOTÕES ARREDONDADOS */
-        .bet-buttons { display: flex; gap: 10px; justify-content: center; margin-bottom: 15px; }
-        .btn-bet {
-            background: var(--spider-black);
-            border: 2px solid var(--spider-blue);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 50px; /* ARREDONDADO */
-            cursor: pointer;
-            transition: 0.3s;
-            font-weight: bold;
-        }
-        .btn-bet:hover { background: var(--spider-blue); transform: scale(1.1); }
-        .btn-clear { border-color: #ff4444; color: #ff4444; }
-
-        /* NAVEGAÇÃO DE JOGOS */
-        .game-nav { display: flex; gap: 10px; margin-bottom: 30px; }
-        .tab-btn {
-            background: none;
+        .sidebar button {
+            background: transparent;
             border: none;
-            color: #888;
-            font-size: 1.1rem;
-            cursor: pointer;
-            padding: 10px;
-            border-bottom: 2px solid transparent;
-        }
-        .tab-btn.active { color: var(--spider-red); border-bottom: 2px solid var(--spider-red); }
-
-        .game-container { display: none; text-align: center; width: 100%; max-width: 500px; }
-        .game-container.active { display: block; }
-
-        /* JOGO 1: DADOS */
-        .dice-area { font-size: 5rem; margin: 20px; min-height: 100px; }
-        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px 0; }
-        .opt-btn {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid #444;
             color: white;
             padding: 15px;
-            border-radius: 10px;
+            text-align: left;
             cursor: pointer;
+            font-size: 1rem;
+            transition: 0.3s;
         }
-        .opt-btn.selected { border-color: var(--spider-red); background: rgba(230, 36, 41, 0.2); }
 
-        /* JOGO 2: CARA OU COROA */
-        .coin {
-            width: 120px;
-            height: 120px;
-            background: var(--gold);
-            border-radius: 50%;
-            margin: 20px auto;
+        .sidebar button:hover {
+            background: var(--primary-red);
+        }
+
+        /* Área Principal */
+        .main-content {
+            flex-grow: 1;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            color: #000;
-            border: 5px solid #b8860b;
-            transition: transform 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            padding: 40px;
+            gap: 20px;
         }
-        .flipping { animation: flip 0.2s infinite; }
-        @keyframes flip { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(180deg); } }
 
-        /* JOGO 3: ARANHAS (MINES) */
-        .grid-5x5 {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 5px;
-            margin: 20px auto;
+        /* HUD de Apostas (Lado Esquerdo da Área Principal) */
+        .bet-panel {
             width: 300px;
-        }
-        .cell {
-            width: 55px;
-            height: 55px;
-            background: #222;
-            border-radius: 5px;
+            background: var(--hud-bg);
+            padding: 20px;
+            border-radius: 10px;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 1.5rem;
-        }
-        .cell.safe { background: var(--spider-blue); }
-        .cell.spider { background: var(--spider-red); }
-
-        /* CONFETES/TEIAS ANIMATION */
-        #fx-canvas {
-            position: fixed;
-            top: 0; left: 0; pointer-events: none;
-            z-index: 999;
+            flex-direction: column;
+            gap: 15px;
         }
 
-        .action-btn {
-            background: var(--spider-red);
+        .input-bet {
+            background: #333;
+            border: 1px solid var(--primary-red);
             color: white;
-            border: none;
-            padding: 15px 40px;
-            font-size: 1.2rem;
-            border-radius: 50px;
-            cursor: pointer;
-            font-weight: bold;
-            box-shadow: 0 5px 15px rgba(230, 36, 41, 0.4);
+            padding: 10px;
+            border-radius: 5px;
         }
+
+        .bet-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+        }
+
+        .btn-value {
+            background: #444;
+            border: none;
+            color: white;
+            padding: 5px;
+            cursor: pointer;
+        }
+
+        .btn-roll {
+            background: var(--primary-red);
+            border: none;
+            color: white;
+            padding: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        /* Área do Jogo (Direita) */
+        .game-display {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: #222;
+            border-radius: 10px;
+        }
+
+        #dice-result {
+            font-size: 8rem;
+            margin-bottom: 20px;
+        }
+
+        .status-msg {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .win { color: #2ecc71; }
+        .lose { color: var(--primary-red); }
     </style>
 </head>
 <body>
 
-    <canvas id="fx-canvas"></canvas>
-
-    <h1>KAZULU</h1>
-
-    <div class="hud">
-        <div class="balance">Saldo: R$ <span id="balance">500.00</span></div>
-        <div class="bet-display">Aposta Atual: <strong>R$ <span id="current-bet">0</span></strong></div>
-        
-        <div class="bet-buttons">
-            <button class="btn-bet" onclick="addBet(1)">+1</button>
-            <button class="btn-bet" onclick="addBet(5)">+5</button>
-            <button class="btn-bet" onclick="addBet(10)">+10</button>
-            <button class="btn-bet" onclick="addBet(100)">+100</button>
-            <button class="btn-bet btn-clear" onclick="clearBet()">Limpar</button>
-        </div>
+    <div class="top-bar">
+        Saldo: $<span id="balance">1000</span>
     </div>
 
-    <div class="game-nav">
-        <button class="tab-btn active" onclick="switchGame('dice')">Dados (2x-6x)</button>
-        <button class="tab-btn" onclick="switchGame('coin')">Cara/Coroa (5x)</button>
-        <button class="tab-btn" onclick="switchGame('spiders')">Aranhas (Multi)</button>
-    </div>
+    <nav class="sidebar">
+        <button onclick="alert('Já estamos em Dados!')">🎲 Dados</button>
+        <button onclick="alert('Em breve: Cara ou Coroa')">🪙 Cara ou Coroa</button>
+    </nav>
 
-    <div id="game-dice" class="game-container active">
-        <div class="dice-area" id="dice-display">🎲</div>
-        <div class="options-grid">
-            <button class="opt-btn" onclick="selectOpt('par', this)">PAR (2x)</button>
-            <button class="opt-btn" onclick="selectOpt('impar', this)">ÍMPAR (2x)</button>
-            <button class="opt-btn" onclick="selectOpt('6', this)">NÚMERO 6 (6x)</button>
-            <button class="opt-btn" onclick="selectOpt('1', this)">NÚMERO 1 (6x)</button>
-        </div>
-        <button class="action-btn" onclick="playDice()">LANÇAR DADOS</button>
-    </div>
+    <main class="main-content">
+        <section class="bet-panel">
+            <h3>Apostar em Dados</h3>
+            
+            <label>Valor da Aposta:</label>
+            <input type="number" id="bet-amount" class="input-bet" value="10">
+            
+            <div class="bet-buttons">
+                <button class="btn-value" onclick="setBet(1)">1</button>
+                <button class="btn-value" onclick="setBet(5)">5</button>
+                <button class="btn-value" onclick="setBet(10)">10</button>
+                <button class="btn-value" onclick="setBet(100)">100</button>
+            </div>
 
-    <div id="game-coin" class="game-container">
-        <div class="coin" id="coin-element">?</div>
-        <div class="options-grid">
-            <button class="opt-btn" onclick="selectOpt('cara', this)">CARA (5x)</button>
-            <button class="opt-btn" onclick="selectOpt('coroa', this)">COROA (5x)</button>
-        </div>
-        <button class="action-btn" onclick="playCoin()">GIRAR MOEDA</button>
-    </div>
+            <label>Tipo de Aposta:</label>
+            <select id="bet-type" class="input-bet">
+                <option value="even">Pares (2x)</option>
+                <option value="odd">Ímpares (2x)</option>
+                <option value="1">Número 1 (5x)</option>
+                <option value="2">Número 2 (5x)</option>
+                <option value="3">Número 3 (5x)</option>
+                <option value="4">Número 4 (5x)</option>
+                <option value="5">Número 5 (5x)</option>
+                <option value="6">Número 6 (5x)</option>
+            </select>
 
-    <div id="game-spiders" class="game-container">
-        <p>Bombas (Aranhas): <input type="range" id="bomb-range" min="1" max="20" value="5" oninput="updateMinesInfo()"> <span id="bomb-count">5</span></p>
-        <p>Multiplicador Atual: <span id="mines-multi" style="color:var(--gold)">1.2x</span></p>
-        <div class="grid-5x5" id="mines-grid"></div>
-        <button class="action-btn" onclick="startMines()">COMEÇAR NOVO TABULEIRO</button>
-    </div>
+            <button class="btn-roll" onclick="playDice()">ROLAR DADOS</button>
+        </section>
+
+        <section class="game-display">
+            <div id="dice-result">🎲</div>
+            <div id="status" class="status-msg">Boa sorte!</div>
+        </section>
+    </main>
 
     <script>
-        let balance = 500;
-        let currentBet = 0;
-        let selectedOption = null;
-        const diceIcons = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+        // Lógica do Jogo
+        let balance = 1000;
 
-        // Sistema de Aposta Somada
-        function addBet(val) {
-            currentBet += val;
-            document.getElementById('current-bet').innerText = currentBet;
+        function setBet(val) {
+            document.getElementById('bet-amount').value = val;
         }
 
-        function clearBet() {
-            currentBet = 0;
-            document.getElementById('current-bet').innerText = 0;
-        }
-
-        function selectOpt(opt, btn) {
-            document.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
-            btn.classList.add('selected');
-            selectedOption = opt;
-        }
-
-        function switchGame(game) {
-            document.querySelectorAll('.game-container').forEach(g => g.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('game-' + game).classList.add('active');
-            event.currentTarget.classList.add('active');
-        }
-
-        // Lógica de Dados com Animação
         function playDice() {
-            if (currentBet <= 0 || !selectedOption) return alert("Aposte e escolha uma opção!");
-            if (currentBet > balance) return alert("Saldo insuficiente!");
+            const betAmount = parseInt(document.getElementById('bet-amount').value);
+            const betType = document.getElementById('bet-type').value;
+            const statusEl = document.getElementById('status');
+            const diceEl = document.getElementById('dice-result');
 
-            balance -= currentBet;
-            updateBalance();
+            if (betAmount > balance) {
+                alert("Saldo insuficiente!");
+                return;
+            }
 
-            let counter = 0;
-            const interval = setInterval(() => {
-                document.getElementById('dice-display').innerText = diceIcons[Math.floor(Math.random()*6)];
-                counter++;
-                if(counter > 10) {
-                    clearInterval(interval);
-                    finishDice();
-                }
-            }, 100);
-        }
-
-        function finishDice() {
+            // Tirar número aleatório entre 1 e 6
             const result = Math.floor(Math.random() * 6) + 1;
-            document.getElementById('dice-display').innerText = diceIcons[result-1];
+            diceEl.innerText = result;
             
-            let win = false;
-            if(selectedOption === 'par' && result % 2 === 0) win = true;
-            if(selectedOption === 'impar' && result % 2 !== 0) win = true;
-            if(selectedOption == result) win = true;
+            balance -= betAmount; // Tira o dinheiro da aposta
+            let won = false;
+            let multiplier = 0;
 
-            if(win) {
-                let mult = (selectedOption === 'par' || selectedOption === 'impar') ? 2 : 6;
-                winAction(currentBet * mult);
+            // Lógica de Ganho
+            if (betType === 'even' && result % 2 === 0) {
+                won = true;
+                multiplier = 2;
+            } else if (betType === 'odd' && result % 2 !== 0) {
+                won = true;
+                multiplier = 2;
+            } else if (parseInt(betType) === result) {
+                won = true;
+                multiplier = 5;
             }
-        }
 
-        // Lógica de Moeda
-        function playCoin() {
-            if (currentBet <= 0 || !selectedOption) return alert("Aposte e escolha Cara ou Coroa!");
-            const coin = document.getElementById('coin-element');
-            coin.classList.add('flipping');
-            
-            balance -= currentBet;
-            updateBalance();
-
-            setTimeout(() => {
-                coin.classList.remove('flipping');
-                const res = Math.random() > 0.5 ? 'cara' : 'coroa';
-                coin.innerText = res.toUpperCase();
-                if(selectedOption === res) winAction(currentBet * 5);
-            }, 1500);
-        }
-
-        // Lógica de Aranhas (Mines)
-        let minePositions = [];
-        let minesActive = false;
-        function updateMinesInfo() {
-            document.getElementById('bomb-count').innerText = document.getElementById('bomb-range').value;
-        }
-
-        function startMines() {
-            if (currentBet <= 0) return alert("Defina a aposta!");
-            const bombCount = parseInt(document.getElementById('bomb-range').value);
-            minePositions = [];
-            while(minePositions.length < bombCount) {
-                let r = Math.floor(Math.random() * 25);
-                if(!minePositions.includes(r)) minePositions.push(r);
-            }
-            
-            const grid = document.getElementById('mines-grid');
-            grid.innerHTML = '';
-            for(let i=0; i<25; i++) {
-                const cell = document.createElement('div');
-                cell.className = 'cell';
-                cell.onclick = () => revealMine(i, cell);
-                grid.appendChild(cell);
-            }
-            balance -= currentBet;
-            updateBalance();
-            minesActive = true;
-        }
-
-        function revealMine(idx, element) {
-            if(!minesActive) return;
-            if(minePositions.includes(idx)) {
-                element.innerHTML = '🕷️';
-                element.classList.add('spider');
-                minesActive = false;
-                alert("Uma aranha te pegou!");
+            if (won) {
+                const prize = betAmount * multiplier;
+                balance += prize;
+                statusEl.innerText = `VOCÊ GANHOU $${prize}!`;
+                statusEl.className = "status-msg win";
             } else {
-                element.innerHTML = '🕸️';
-                element.classList.add('safe');
-                // Simulação de ganho progressivo
-                winAction(currentBet * 0.2, true); 
+                statusEl.innerText = "VOCÊ PERDEU!";
+                statusEl.className = "status-msg lose";
             }
-        }
 
-        function updateBalance() {
-            document.getElementById('balance').innerText = balance.toFixed(2);
-        }
-
-        function winAction(amount, silent = false) {
-            balance += amount;
-            updateBalance();
-            if(!silent) {
-                spawnWebs();
-                alert("VOCÊ GANHOU R$ " + amount.toFixed(2));
-            }
-        }
-
-        // Efeito de Teias/Confetes
-        function spawnWebs() {
-            const canvas = document.getElementById('fx-canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            
-            for(let i=0; i<30; i++) {
-                ctx.beginPath();
-                ctx.moveTo(canvas.width/2, canvas.height/2);
-                ctx.lineTo(Math.random()*canvas.width, Math.random()*canvas.height);
-                ctx.strokeStyle = "white";
-                ctx.lineWidth = 0.5;
-                ctx.stroke();
-            }
-            setTimeout(() => ctx.clearRect(0,0,canvas.width, canvas.height), 1000);
+            document.getElementById('balance').innerText = balance;
         }
     </script>
 </body>
