@@ -3,401 +3,355 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RedLuck - Cassino Premium</title>
+    <title>RedLuck - Pirate & Casino Edition</title>
     <style>
         :root {
             --primary-red: #e74c3c;
-            --dark-red: #c0392b;
-            --bg-dark: #121212;
-            --hud-bg: #1e1e1e;
-            --card-bg: #252525;
-            --text-white: #ecf0f1;
             --accent-gold: #f1c40f;
+            --bg-dark: #0f0f0f;
+            --card-bg: #1a1a1a;
+            --pill-radius: 50px;
+            --fire-color: #ff6600;
         }
 
         body {
-            margin: 0;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-white);
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* BARRA SUPERIOR */
-        .top-bar {
-            position: absolute;
-            top: 20px;
-            right: 30px;
-            background: var(--hud-bg);
-            padding: 10px 25px;
-            border-radius: 50px;
-            border: 2px solid var(--primary-red);
-            font-weight: bold;
-            font-size: 1.3rem;
-            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
-            z-index: 10;
+            margin: 0; font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg-dark); color: white;
+            display: flex; height: 100vh; overflow: hidden;
         }
 
         /* SIDEBAR */
         .sidebar {
-            width: 220px;
-            background-color: var(--hud-bg);
-            border-right: 2px solid #333;
-            display: flex;
-            flex-direction: column;
-            padding: 20px 10px;
-            gap: 10px;
+            width: 240px; background: #151515; border-right: 2px solid #222;
+            display: flex; flex-direction: column; padding: 20px; gap: 10px;
         }
-
-        .sidebar h2 {
-            text-align: center;
-            color: var(--primary-red);
-            font-size: 1.5rem;
-            margin-bottom: 20px;
-        }
-
+        .sidebar h2 { color: var(--primary-red); text-align: center; letter-spacing: 2px; }
         .sidebar button {
-            background: transparent;
-            border: 1px solid transparent;
-            color: #888;
-            padding: 15px;
-            text-align: left;
-            cursor: pointer;
-            font-size: 1rem;
-            border-radius: 12px;
-            transition: 0.3s;
+            background: transparent; border: none; color: #777; padding: 12px;
+            text-align: left; cursor: pointer; border-radius: 12px; transition: 0.3s;
+            font-weight: bold; font-size: 0.9rem;
+        }
+        .sidebar button.active { background: var(--primary-red); color: white; }
+        .sidebar button:hover:not(.active) { background: #222; color: white; }
+
+        /* MAIN CONTENT */
+        .main-content { flex-grow: 1; display: flex; padding: 30px; gap: 20px; }
+
+        /* HUD & BALANCE */
+        .top-info {
+            position: absolute; top: 20px; right: 40px; display: flex; gap: 15px; z-index: 100;
+        }
+        .hud-item {
+            background: #1a1a1a; padding: 10px 25px; border-radius: 50px;
+            border: 2px solid var(--primary-red); font-weight: bold; font-size: 1.2rem;
+        }
+        .streak-badge {
+            border-color: var(--fire-color); color: var(--fire-color); display: none;
+            animation: glow 1s infinite alternate;
         }
 
-        .sidebar button.active {
-            background: var(--primary-red);
-            color: white;
-            font-weight: bold;
-        }
-
-        .sidebar button:hover:not(.active) {
-            background: #333;
-            color: white;
-        }
-
-        /* CONTEÚDO PRINCIPAL */
-        .main-content {
-            flex-grow: 1;
-            display: flex;
-            padding: 40px;
-            gap: 30px;
-            margin-top: 60px;
-        }
-
-        /* PAINEL DE APOSTAS */
+        /* BET PANEL */
         .bet-panel {
-            width: 350px;
-            background: var(--hud-bg);
-            padding: 25px;
-            border-radius: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            width: 320px; background: #1a1a1a; padding: 20px; border-radius: 20px;
+            display: flex; flex-direction: column; gap: 15px; border: 1px solid #333;
         }
-
-        .bet-panel h3 { margin: 0; font-size: 1.2rem; color: #bbb; }
-
-        /* INPUT DE VALOR */
         .display-bet {
-            background: #000;
-            padding: 15px;
-            border-radius: 15px;
-            text-align: center;
+            background: #000; padding: 15px; border-radius: 15px; text-align: center;
             border: 1px solid #444;
         }
+        .display-bet span { font-size: 1.8rem; color: var(--accent-gold); font-weight: bold; }
 
-        .display-bet label { font-size: 0.8rem; color: #777; display: block; }
-        .display-bet span { font-size: 2rem; font-weight: bold; color: var(--accent-gold); }
-
-        /* BOTÕES PILL SHAPE */
-        .pill-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-        }
-
+        .pill-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
         .btn-pill {
-            background: #333;
-            border: none;
-            color: white;
-            padding: 10px 5px;
-            border-radius: 50px; /* Formato de Pílula */
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.2s;
+            background: #333; border: none; color: white; padding: 10px;
+            border-radius: var(--pill-radius); cursor: pointer; font-weight: bold; transition: 0.2s;
+        }
+        .btn-pill:hover { background: #444; }
+        .btn-clear { background: #c0392b; grid-column: span 2; }
+
+        /* GAME AREA */
+        .game-area {
+            flex-grow: 1; background: #111; border-radius: 25px; position: relative;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            border: 2px solid #222; overflow: hidden;
         }
 
-        .btn-pill:hover { background: #444; transform: scale(1.05); }
-        .btn-pill:active { transform: scale(0.95); }
-        .btn-clear { background: #555; grid-column: span 4; margin-top: 5px; }
-
-        /* GRID DE TIPOS DE APOSTA */
-        .type-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
+        /* MINES GRID */
+        .mines-grid {
+            display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; display: none;
+        }
+        .mine-btn {
+            width: 50px; height: 50px; background: #333; border-radius: 10px;
+            border: none; cursor: pointer; font-size: 1.5rem; transition: 0.3s;
         }
 
-        .btn-type {
-            background: #252525;
-            border: 2px solid #444;
-            color: white;
-            padding: 12px;
-            border-radius: 50px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: 0.3s;
+        /* CRASH / PIRATE SHIP */
+        #pirate-scene {
+            display: none; flex-direction: column; align-items: center; width: 100%;
+        }
+        .ship { font-size: 5rem; transition: transform 0.1s; }
+        .sea { width: 100%; height: 20px; background: #2980b9; margin-top: 10px; border-radius: 10px; }
+        .multiplier-text { font-size: 4rem; font-weight: bold; color: var(--accent-gold); }
+
+        /* PLINKO */
+        #plinko-board {
+            width: 400px; height: 500px; background: #1a1a1a; position: relative;
+            display: none; border-radius: 10px; border: 2px solid #333;
+        }
+        .plinko-ball {
+            width: 12px; height: 12px; background: var(--primary-red); border-radius: 50%;
+            position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
         }
 
-        .btn-type.selected {
-            border-color: var(--primary-red);
-            background: rgba(231, 76, 60, 0.1);
-            color: var(--primary-red);
+        /* GENERAL BUTTONS */
+        .btn-action {
+            width: 100%; padding: 15px; border-radius: var(--pill-radius);
+            border: none; background: var(--primary-red); color: white;
+            font-size: 1.2rem; font-weight: bold; cursor: pointer; margin-top: 10px;
+        }
+        .btn-action:disabled { background: #444; cursor: not-allowed; }
+
+        @keyframes glow {
+            from { box-shadow: 0 0 5px var(--fire-color); }
+            to { box-shadow: 0 0 20px var(--fire-color); }
         }
 
-        /* ÁREA DE JOGO */
-        .game-display {
-            flex-grow: 1;
-            background: var(--card-bg);
-            border-radius: 20px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            border: 1px solid #333;
-        }
-
-        #visual-element {
-            font-size: 10rem;
-            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            margin-bottom: 20px;
-        }
-
-        .btn-play {
-            width: 100%;
-            background: var(--primary-red);
-            border: none;
-            color: white;
-            padding: 18px;
-            border-radius: 50px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
-            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
-        }
-
-        .btn-play:disabled { background: #555; cursor: not-allowed; }
-
-        /* MENSAGEM STATUS */
-        .status-msg { font-size: 1.8rem; font-weight: bold; height: 40px; }
-        .win { color: #2ecc71; animation: celebrate 0.5s ease; }
-        .lose { color: var(--primary-red); }
-
-        @keyframes celebrate {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1); }
-        }
-
-        /* MOEDA ANIMADA */
-        .coin {
-            width: 150px;
-            height: 150px;
-            background: var(--accent-gold);
-            border-radius: 50%;
-            border: 8px solid #d4ac0d;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #927500;
-        }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <div class="top-bar">
-        $ <span id="balance">1000</span>
+    <div class="top-info">
+        <div id="streak-indicator" class="hud-item streak-badge">🔥 STREAK: <span id="streak-val">0</span></div>
+        <div class="hud-item">$ <span id="balance">1000</span></div>
     </div>
 
     <nav class="sidebar">
         <h2>REDLUCK</h2>
-        <button id="tab-dice" class="active" onclick="switchGame('dice')">🎲 Dados</button>
-        <button id="tab-coin" onclick="switchGame('coin')">🪙 Cara ou Coroa</button>
+        <button id="btn-dice" class="active" onclick="setGame('dice')">🎲 Dados</button>
+        <button id="btn-coin" onclick="setGame('coin')">🪙 Cara ou Coroa</button>
+        <button id="btn-mines" onclick="setGame('mines')">💣 Mines</button>
+        <button id="btn-plinko" onclick="setGame('plinko')">🔵 Plinko</button>
+        <button id="btn-pirate" onclick="setGame('pirate')">🚢 Navio Pirata</button>
+        <button id="btn-luck" class="hidden" onclick="setGame('luck')" style="color:var(--accent-gold)">🎡 Roda LUCK</button>
     </nav>
 
     <main class="main-content">
         <section class="bet-panel">
             <div class="display-bet">
-                <label>SUA APOSTA</label>
-                $<span id="current-bet-display">0</span>
+                <label style="color:#666; font-size:0.7rem">APOSTA ACUMULADA</label><br>
+                $<span id="bet-amount">0</span>
             </div>
-
-            <h3>Aumentar Aposta</h3>
+            
             <div class="pill-grid">
-                <button class="btn-pill" onclick="addBet(1)">+1</button>
-                <button class="btn-pill" onclick="addBet(5)">+5</button>
-                <button class="btn-pill" onclick="addBet(10)">+10</button>
-                <button class="btn-pill" onclick="addBet(100)">+100</button>
-                <button class="btn-pill btn-clear" onclick="clearBet()">Limpar Aposta</button>
+                <button class="btn-pill" onclick="modBet(1)">+1</button>
+                <button class="btn-pill" onclick="modBet(10)">+10</button>
+                <button class="btn-pill" onclick="modBet(50)">+50</button>
+                <button class="btn-pill" onclick="modBet(100)">+100</button>
+                <button class="btn-pill btn-clear" onclick="clearBet()">Zerar</button>
             </div>
 
-            <h3 id="type-title">Escolha o Resultado</h3>
-            <div id="options-container" class="type-grid">
+            <div id="game-options" class="pill-grid">
                 </div>
 
-            <button class="btn-play" id="play-button" onclick="play()">JOGAR</button>
+            <button id="main-action-btn" class="btn-action" onclick="handleAction()">JOGAR</button>
         </section>
 
-        <section class="game-display">
-            <div id="visual-element">🎲</div>
-            <div id="status" class="status-msg">Boa sorte!</div>
+        <section class="game-area">
+            <div id="simple-visual" style="font-size: 8rem;">🎲</div>
+
+            <div id="mines-container" class="mines-grid"></div>
+
+            <div id="pirate-scene">
+                <div class="multiplier-text" id="crash-mult">1.00x</div>
+                <div class="ship" id="pirate-ship">🚢</div>
+                <div class="sea"></div>
+            </div>
+
+            <div id="plinko-board"></div>
+
+            <div id="status-msg" style="margin-top: 20px; font-weight: bold; font-size: 1.5rem;"></div>
         </section>
     </main>
 
     <script>
         let balance = 1000;
-        let currentBet = 0;
-        let selectedType = null;
-        let currentGame = 'dice'; // 'dice' ou 'coin'
+        let bet = 0;
+        let currentGame = 'dice';
+        let streak = 0;
+        let selectedOption = null;
+        let isVip = false;
+        let secretInput = "";
 
-        const options = {
-            dice: [
-                { id: 'even', label: 'Pares (2x)', mult: 2 },
-                { id: 'odd', label: 'Ímpares (2x)', mult: 2 },
-                { id: '1', label: 'Nº 1 (5x)', mult: 5 },
-                { id: '2', label: 'Nº 2 (5x)', mult: 5 },
-                { id: '3', label: 'Nº 3 (5x)', mult: 5 },
-                { id: '4', label: 'Nº 4 (5x)', mult: 5 },
-                { id: '5', label: 'Nº 5 (5x)', mult: 5 },
-                { id: '6', label: 'Nº 6 (5x)', mult: 5 }
-            ],
-            coin: [
-                { id: 'heads', label: 'Cara (5x)', mult: 5 },
-                { id: 'tails', label: 'Coroa (5x)', mult: 5 }
-            ]
-        };
+        // Lógica de Crash
+        let crashInterval;
+        let currentMult = 1.0;
+        let isPlayingCrash = false;
 
-        function switchGame(game) {
+        // Sons/Efeitos
+        function updateUI() {
+            document.getElementById('balance').innerText = balance - bet;
+            document.getElementById('bet-amount').innerText = bet;
+            const streakBadge = document.getElementById('streak-indicator');
+            if(streak >= 3) {
+                streakBadge.style.display = 'block';
+                document.getElementById('streak-val').innerText = streak;
+            } else {
+                streakBadge.style.display = 'none';
+            }
+        }
+
+        function modBet(val) {
+            if (balance >= bet + val) { bet += val; updateUI(); }
+        }
+
+        function clearBet() { bet = 0; updateUI(); }
+
+        // Segredo LUCK
+        document.addEventListener('keydown', (e) => {
+            secretInput += e.key.toLowerCase();
+            if(secretInput.includes("luck")) {
+                isVip = true;
+                document.getElementById('btn-luck').classList.remove('hidden');
+                alert("✨ MODO VIP ATIVADO!");
+                secretInput = "";
+            }
+        });
+
+        function setGame(game) {
             currentGame = game;
-            selectedType = null;
-            document.getElementById('tab-dice').className = game === 'dice' ? 'active' : '';
-            document.getElementById('tab-coin').className = game === 'coin' ? 'active' : '';
-            document.getElementById('visual-element').innerHTML = game === 'dice' ? '🎲' : '<div class="coin">?</div>';
-            document.getElementById('status').innerText = "Boa sorte!";
-            renderOptions();
-        }
+            document.querySelectorAll('.sidebar button').forEach(b => b.classList.remove('active'));
+            document.getElementById('btn-' + game).classList.add('active');
+            
+            // Reset Visuals
+            document.getElementById('simple-visual').classList.add('hidden');
+            document.getElementById('mines-container').classList.add('hidden');
+            document.getElementById('pirate-scene').style.display = 'none';
+            document.getElementById('plinko-board').style.display = 'none';
+            document.getElementById('status-msg').innerText = "";
+            
+            const optCont = document.getElementById('game-options');
+            optCont.innerHTML = "";
 
-        function renderOptions() {
-            const container = document.getElementById('options-container');
-            container.innerHTML = '';
-            options[currentGame].forEach(opt => {
-                const btn = document.createElement('button');
-                btn.className = 'btn-type';
-                btn.innerText = opt.label;
-                btn.onclick = () => selectType(opt.id);
-                btn.id = `opt-${opt.id}`;
-                container.appendChild(btn);
-            });
-        }
-
-        function selectType(id) {
-            selectedType = id;
-            document.querySelectorAll('.btn-type').forEach(b => b.classList.remove('selected'));
-            document.getElementById(`opt-${id}`).classList.add('selected');
-        }
-
-        function addBet(val) {
-            if (balance >= currentBet + val) {
-                currentBet += val;
-                updateDisplay();
-            } else {
-                alert("Saldo insuficiente para aumentar a aposta!");
+            if(game === 'dice' || game === 'coin') {
+                document.getElementById('simple-visual').classList.remove('hidden');
+                document.getElementById('simple-visual').innerText = game === 'dice' ? '🎲' : '🪙';
+                const options = game === 'dice' ? ['Par', 'Ímpar'] : ['Cara', 'Coroa'];
+                options.forEach(o => {
+                    let b = document.createElement('button');
+                    b.className = 'btn-pill'; b.innerText = o;
+                    b.onclick = () => { selectedOption = o; alert("Selecionado: " + o); };
+                    optCont.appendChild(b);
+                });
+            } else if(game === 'pirate') {
+                document.getElementById('pirate-scene').style.display = 'flex';
+                document.getElementById('main-action-btn').innerText = "ZARPAR";
+            } else if(game === 'mines') {
+                document.getElementById('mines-container').classList.remove('hidden');
+                initMines();
             }
         }
 
-        function clearBet() {
-            currentBet = 0;
-            updateDisplay();
+        function handleAction() {
+            if(bet <= 0) return alert("Aposte algo!");
+
+            if(currentGame === 'pirate') {
+                if(!isPlayingCrash) startCrash();
+                else stopCrash();
+            } else if(currentGame === 'dice') {
+                playDice();
+            }
+            // Outras lógicas de jogo...
         }
 
-        function updateDisplay() {
-            document.getElementById('current-bet-display').innerText = currentBet;
-            document.getElementById('balance').innerText = balance - currentBet;
-        }
-
-        function play() {
-            if (currentBet <= 0) return alert("Insira um valor!");
-            if (!selectedType) return alert("Escolha onde apostar!");
-
-            const statusEl = document.getElementById('status');
-            const visualEl = document.getElementById('visual-element');
+        // --- LÓGICA PIRATE CRASH ---
+        function startCrash() {
+            isPlayingCrash = true;
+            currentMult = 1.0;
+            balance -= bet;
+            document.getElementById('main-action-btn').innerText = "RESGATAR TESOURO";
+            document.getElementById('status-msg').innerText = "Navegando...";
             
-            statusEl.innerText = "Sorteando...";
-            balance -= currentBet;
+            let crashPoint = (Math.random() * 5 + 1).toFixed(2); // Sorteia quando vai cair
 
-            if (currentGame === 'dice') {
-                const result = Math.floor(Math.random() * 6) + 1;
-                visualEl.style.transform = "rotate(360deg)";
+            crashInterval = setInterval(() => {
+                currentMult += 0.01;
+                document.getElementById('crash-mult').innerText = currentMult.toFixed(2) + "x";
                 
-                setTimeout(() => {
-                    visualEl.innerText = result;
-                    visualEl.style.transform = "rotate(0deg)";
-                    checkWinner(result);
-                }, 600);
-            } else {
-                const results = ['heads', 'tails'];
-                const result = results[Math.floor(Math.random() * 2)];
-                visualEl.style.transform = "rotateY(720deg)";
+                // Balanço do navio
+                document.getElementById('pirate-ship').style.transform = `rotate(${Math.sin(currentMult*10)*10}deg)`;
 
-                setTimeout(() => {
-                    visualEl.innerHTML = `<div class="coin">${result === 'heads' ? 'CARA' : 'COROA'}</div>`;
-                    visualEl.style.transform = "rotateY(0deg)";
-                    checkWinner(result);
-                }, 600);
-            }
+                if(currentMult >= crashPoint) {
+                    gameOverCrash();
+                }
+            }, 50);
         }
 
-        function checkWinner(result) {
-            const statusEl = document.getElementById('status');
-            let won = false;
-            let opt = options[currentGame].find(o => o.id === selectedType);
-
-            if (currentGame === 'dice') {
-                if (selectedType === 'even') won = (result % 2 === 0);
-                else if (selectedType === 'odd') won = (result % 2 !== 0);
-                else won = (selectedType == result);
-            } else {
-                won = (selectedType === result);
-            }
-
-            if (won) {
-                const prize = currentBet * opt.mult;
-                balance += prize;
-                statusEl.innerText = `GANHOU $${prize}!`;
-                statusEl.className = "status-msg win";
-            } else {
-                statusEl.innerText = "PERDEU!";
-                statusEl.className = "status-msg lose";
-            }
+        function stopCrash() {
+            clearInterval(crashInterval);
+            isPlayingCrash = false;
+            let win = bet * currentMult;
+            if(streak >= 3) win *= 2; // Bônus de Streak
             
-            currentBet = 0;
-            updateDisplay();
+            balance += win;
+            streak++;
+            document.getElementById('status-msg').innerHTML = `<span style="color:#2ecc71">TESOURO RESGATADO: $${win.toFixed(2)}</span>`;
+            document.getElementById('main-action-btn').innerText = "ZARPAR";
+            bet = 0;
+            updateUI();
+        }
+
+        function gameOverCrash() {
+            clearInterval(crashInterval);
+            isPlayingCrash = false;
+            streak = 0;
+            document.getElementById('status-msg').innerHTML = `<span style="color:red">O NAVIO AFUNDOU!</span>`;
+            document.getElementById('pirate-ship').innerText = "💥";
+            setTimeout(() => document.getElementById('pirate-ship').innerText = "🚢", 2000);
+            document.getElementById('main-action-btn').innerText = "ZARPAR";
+            bet = 0;
+            updateUI();
+        }
+
+        // --- LÓGICA DICE SIMPLES ---
+        function playDice() {
+            if(!selectedOption) return alert("Escolha Par ou Ímpar!");
+            balance -= bet;
+            let result = Math.floor(Math.random() * 6) + 1;
+            document.getElementById('simple-visual').innerText = result;
+            
+            let isEven = result % 2 === 0;
+            let won = (selectedOption === 'Par' && isEven) || (selectedOption === 'Ímpar' && !isEven);
+
+            if(won) {
+                let prize = bet * 2;
+                if(streak >= 3) prize *= 2;
+                balance += prize;
+                streak++;
+                document.getElementById('status-msg').innerText = "GANHOU! Streak: " + streak;
+            } else {
+                streak = 0;
+                document.getElementById('status-msg').innerText = "PERDEU!";
+            }
+            bet = 0;
+            updateUI();
+        }
+
+        function initMines() {
+            const cont = document.getElementById('mines-container');
+            cont.innerHTML = "";
+            for(let i=0; i<25; i++) {
+                let b = document.createElement('button');
+                b.className = 'mine-btn';
+                b.innerText = "❓";
+                b.onclick = () => alert("Mecânica Mines: Sistema de clique em expansão!");
+                cont.appendChild(b);
+            }
         }
 
         // Inicializar
-        renderOptions();
-        updateDisplay();
+        setGame('dice');
+        updateUI();
     </script>
 </body>
 </html>
