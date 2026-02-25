@@ -3,20 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RedLuck - Cassino Fictício</title>
+    <title>RedLuck - Cassino Premium</title>
     <style>
-        /* CSS - O Visual do Jogo */
         :root {
             --primary-red: #e74c3c;
             --dark-red: #c0392b;
-            --bg-dark: #1a1a1a;
-            --hud-bg: #252525;
+            --bg-dark: #121212;
+            --hud-bg: #1e1e1e;
+            --card-bg: #252525;
             --text-white: #ecf0f1;
+            --accent-gold: #f1c40f;
         }
 
         body {
             margin: 0;
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-dark);
             color: var(--text-white);
             display: flex;
@@ -24,217 +25,379 @@
             overflow: hidden;
         }
 
-        /* Top Bar - Saldo */
+        /* BARRA SUPERIOR */
         .top-bar {
             position: absolute;
             top: 20px;
             right: 30px;
             background: var(--hud-bg);
-            padding: 10px 20px;
+            padding: 10px 25px;
             border-radius: 50px;
             border: 2px solid var(--primary-red);
             font-weight: bold;
-            font-size: 1.2rem;
+            font-size: 1.3rem;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+            z-index: 10;
         }
 
-        /* HUD Esquerdo - Menu */
+        /* SIDEBAR */
         .sidebar {
-            width: 200px;
+            width: 220px;
             background-color: var(--hud-bg);
-            border-right: 3px solid var(--primary-red);
+            border-right: 2px solid #333;
             display: flex;
             flex-direction: column;
-            padding: 20px 0;
+            padding: 20px 10px;
+            gap: 10px;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            color: var(--primary-red);
+            font-size: 1.5rem;
+            margin-bottom: 20px;
         }
 
         .sidebar button {
             background: transparent;
-            border: none;
-            color: white;
+            border: 1px solid transparent;
+            color: #888;
             padding: 15px;
             text-align: left;
             cursor: pointer;
             font-size: 1rem;
+            border-radius: 12px;
             transition: 0.3s;
         }
 
-        .sidebar button:hover {
+        .sidebar button.active {
             background: var(--primary-red);
+            color: white;
+            font-weight: bold;
         }
 
-        /* Área Principal */
+        .sidebar button:hover:not(.active) {
+            background: #333;
+            color: white;
+        }
+
+        /* CONTEÚDO PRINCIPAL */
         .main-content {
             flex-grow: 1;
             display: flex;
             padding: 40px;
-            gap: 20px;
+            gap: 30px;
+            margin-top: 60px;
         }
 
-        /* HUD de Apostas (Lado Esquerdo da Área Principal) */
+        /* PAINEL DE APOSTAS */
         .bet-panel {
-            width: 300px;
+            width: 350px;
             background: var(--hud-bg);
-            padding: 20px;
-            border-radius: 10px;
+            padding: 25px;
+            border-radius: 20px;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        .input-bet {
+        .bet-panel h3 { margin: 0; font-size: 1.2rem; color: #bbb; }
+
+        /* INPUT DE VALOR */
+        .display-bet {
+            background: #000;
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid #444;
+        }
+
+        .display-bet label { font-size: 0.8rem; color: #777; display: block; }
+        .display-bet span { font-size: 2rem; font-weight: bold; color: var(--accent-gold); }
+
+        /* BOTÕES PILL SHAPE */
+        .pill-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .btn-pill {
             background: #333;
-            border: 1px solid var(--primary-red);
+            border: none;
             color: white;
-            padding: 10px;
-            border-radius: 5px;
+            padding: 10px 5px;
+            border-radius: 50px; /* Formato de Pílula */
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
         }
 
-        .bet-buttons {
+        .btn-pill:hover { background: #444; transform: scale(1.05); }
+        .btn-pill:active { transform: scale(0.95); }
+        .btn-clear { background: #555; grid-column: span 4; margin-top: 5px; }
+
+        /* GRID DE TIPOS DE APOSTA */
+        .type-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 5px;
+            gap: 10px;
         }
 
-        .btn-value {
-            background: #444;
-            border: none;
+        .btn-type {
+            background: #252525;
+            border: 2px solid #444;
             color: white;
-            padding: 5px;
+            padding: 12px;
+            border-radius: 50px;
             cursor: pointer;
+            font-size: 0.9rem;
+            transition: 0.3s;
         }
 
-        .btn-roll {
-            background: var(--primary-red);
-            border: none;
-            color: white;
-            padding: 15px;
-            font-weight: bold;
-            cursor: pointer;
-            border-radius: 5px;
+        .btn-type.selected {
+            border-color: var(--primary-red);
+            background: rgba(231, 76, 60, 0.1);
+            color: var(--primary-red);
         }
 
-        /* Área do Jogo (Direita) */
+        /* ÁREA DE JOGO */
         .game-display {
             flex-grow: 1;
+            background: var(--card-bg);
+            border-radius: 20px;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background: #222;
-            border-radius: 10px;
+            position: relative;
+            border: 1px solid #333;
         }
 
-        #dice-result {
-            font-size: 8rem;
+        #visual-element {
+            font-size: 10rem;
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             margin-bottom: 20px;
         }
 
-        .status-msg {
-            font-size: 1.5rem;
+        .btn-play {
+            width: 100%;
+            background: var(--primary-red);
+            border: none;
+            color: white;
+            padding: 18px;
+            border-radius: 50px;
+            font-size: 1.2rem;
             font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
         }
 
-        .win { color: #2ecc71; }
+        .btn-play:disabled { background: #555; cursor: not-allowed; }
+
+        /* MENSAGEM STATUS */
+        .status-msg { font-size: 1.8rem; font-weight: bold; height: 40px; }
+        .win { color: #2ecc71; animation: celebrate 0.5s ease; }
         .lose { color: var(--primary-red); }
+
+        @keyframes celebrate {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        /* MOEDA ANIMADA */
+        .coin {
+            width: 150px;
+            height: 150px;
+            background: var(--accent-gold);
+            border-radius: 50%;
+            border: 8px solid #d4ac0d;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #927500;
+        }
     </style>
 </head>
 <body>
 
     <div class="top-bar">
-        Saldo: $<span id="balance">1000</span>
+        $ <span id="balance">1000</span>
     </div>
 
     <nav class="sidebar">
-        <button onclick="alert('Já estamos em Dados!')">🎲 Dados</button>
-        <button onclick="alert('Em breve: Cara ou Coroa')">🪙 Cara ou Coroa</button>
+        <h2>REDLUCK</h2>
+        <button id="tab-dice" class="active" onclick="switchGame('dice')">🎲 Dados</button>
+        <button id="tab-coin" onclick="switchGame('coin')">🪙 Cara ou Coroa</button>
     </nav>
 
     <main class="main-content">
         <section class="bet-panel">
-            <h3>Apostar em Dados</h3>
-            
-            <label>Valor da Aposta:</label>
-            <input type="number" id="bet-amount" class="input-bet" value="10">
-            
-            <div class="bet-buttons">
-                <button class="btn-value" onclick="setBet(1)">1</button>
-                <button class="btn-value" onclick="setBet(5)">5</button>
-                <button class="btn-value" onclick="setBet(10)">10</button>
-                <button class="btn-value" onclick="setBet(100)">100</button>
+            <div class="display-bet">
+                <label>SUA APOSTA</label>
+                $<span id="current-bet-display">0</span>
             </div>
 
-            <label>Tipo de Aposta:</label>
-            <select id="bet-type" class="input-bet">
-                <option value="even">Pares (2x)</option>
-                <option value="odd">Ímpares (2x)</option>
-                <option value="1">Número 1 (5x)</option>
-                <option value="2">Número 2 (5x)</option>
-                <option value="3">Número 3 (5x)</option>
-                <option value="4">Número 4 (5x)</option>
-                <option value="5">Número 5 (5x)</option>
-                <option value="6">Número 6 (5x)</option>
-            </select>
+            <h3>Aumentar Aposta</h3>
+            <div class="pill-grid">
+                <button class="btn-pill" onclick="addBet(1)">+1</button>
+                <button class="btn-pill" onclick="addBet(5)">+5</button>
+                <button class="btn-pill" onclick="addBet(10)">+10</button>
+                <button class="btn-pill" onclick="addBet(100)">+100</button>
+                <button class="btn-pill btn-clear" onclick="clearBet()">Limpar Aposta</button>
+            </div>
 
-            <button class="btn-roll" onclick="playDice()">ROLAR DADOS</button>
+            <h3 id="type-title">Escolha o Resultado</h3>
+            <div id="options-container" class="type-grid">
+                </div>
+
+            <button class="btn-play" id="play-button" onclick="play()">JOGAR</button>
         </section>
 
         <section class="game-display">
-            <div id="dice-result">🎲</div>
+            <div id="visual-element">🎲</div>
             <div id="status" class="status-msg">Boa sorte!</div>
         </section>
     </main>
 
     <script>
-        // Lógica do Jogo
         let balance = 1000;
+        let currentBet = 0;
+        let selectedType = null;
+        let currentGame = 'dice'; // 'dice' ou 'coin'
 
-        function setBet(val) {
-            document.getElementById('bet-amount').value = val;
+        const options = {
+            dice: [
+                { id: 'even', label: 'Pares (2x)', mult: 2 },
+                { id: 'odd', label: 'Ímpares (2x)', mult: 2 },
+                { id: '1', label: 'Nº 1 (5x)', mult: 5 },
+                { id: '2', label: 'Nº 2 (5x)', mult: 5 },
+                { id: '3', label: 'Nº 3 (5x)', mult: 5 },
+                { id: '4', label: 'Nº 4 (5x)', mult: 5 },
+                { id: '5', label: 'Nº 5 (5x)', mult: 5 },
+                { id: '6', label: 'Nº 6 (5x)', mult: 5 }
+            ],
+            coin: [
+                { id: 'heads', label: 'Cara (5x)', mult: 5 },
+                { id: 'tails', label: 'Coroa (5x)', mult: 5 }
+            ]
+        };
+
+        function switchGame(game) {
+            currentGame = game;
+            selectedType = null;
+            document.getElementById('tab-dice').className = game === 'dice' ? 'active' : '';
+            document.getElementById('tab-coin').className = game === 'coin' ? 'active' : '';
+            document.getElementById('visual-element').innerHTML = game === 'dice' ? '🎲' : '<div class="coin">?</div>';
+            document.getElementById('status').innerText = "Boa sorte!";
+            renderOptions();
         }
 
-        function playDice() {
-            const betAmount = parseInt(document.getElementById('bet-amount').value);
-            const betType = document.getElementById('bet-type').value;
-            const statusEl = document.getElementById('status');
-            const diceEl = document.getElementById('dice-result');
+        function renderOptions() {
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+            options[currentGame].forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-type';
+                btn.innerText = opt.label;
+                btn.onclick = () => selectType(opt.id);
+                btn.id = `opt-${opt.id}`;
+                container.appendChild(btn);
+            });
+        }
 
-            if (betAmount > balance) {
-                alert("Saldo insuficiente!");
-                return;
+        function selectType(id) {
+            selectedType = id;
+            document.querySelectorAll('.btn-type').forEach(b => b.classList.remove('selected'));
+            document.getElementById(`opt-${id}`).classList.add('selected');
+        }
+
+        function addBet(val) {
+            if (balance >= currentBet + val) {
+                currentBet += val;
+                updateDisplay();
+            } else {
+                alert("Saldo insuficiente para aumentar a aposta!");
             }
+        }
 
-            // Tirar número aleatório entre 1 e 6
-            const result = Math.floor(Math.random() * 6) + 1;
-            diceEl.innerText = result;
+        function clearBet() {
+            currentBet = 0;
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            document.getElementById('current-bet-display').innerText = currentBet;
+            document.getElementById('balance').innerText = balance - currentBet;
+        }
+
+        function play() {
+            if (currentBet <= 0) return alert("Insira um valor!");
+            if (!selectedType) return alert("Escolha onde apostar!");
+
+            const statusEl = document.getElementById('status');
+            const visualEl = document.getElementById('visual-element');
             
-            balance -= betAmount; // Tira o dinheiro da aposta
-            let won = false;
-            let multiplier = 0;
+            statusEl.innerText = "Sorteando...";
+            balance -= currentBet;
 
-            // Lógica de Ganho
-            if (betType === 'even' && result % 2 === 0) {
-                won = true;
-                multiplier = 2;
-            } else if (betType === 'odd' && result % 2 !== 0) {
-                won = true;
-                multiplier = 2;
-            } else if (parseInt(betType) === result) {
-                won = true;
-                multiplier = 5;
+            if (currentGame === 'dice') {
+                const result = Math.floor(Math.random() * 6) + 1;
+                visualEl.style.transform = "rotate(360deg)";
+                
+                setTimeout(() => {
+                    visualEl.innerText = result;
+                    visualEl.style.transform = "rotate(0deg)";
+                    checkWinner(result);
+                }, 600);
+            } else {
+                const results = ['heads', 'tails'];
+                const result = results[Math.floor(Math.random() * 2)];
+                visualEl.style.transform = "rotateY(720deg)";
+
+                setTimeout(() => {
+                    visualEl.innerHTML = `<div class="coin">${result === 'heads' ? 'CARA' : 'COROA'}</div>`;
+                    visualEl.style.transform = "rotateY(0deg)";
+                    checkWinner(result);
+                }, 600);
+            }
+        }
+
+        function checkWinner(result) {
+            const statusEl = document.getElementById('status');
+            let won = false;
+            let opt = options[currentGame].find(o => o.id === selectedType);
+
+            if (currentGame === 'dice') {
+                if (selectedType === 'even') won = (result % 2 === 0);
+                else if (selectedType === 'odd') won = (result % 2 !== 0);
+                else won = (selectedType == result);
+            } else {
+                won = (selectedType === result);
             }
 
             if (won) {
-                const prize = betAmount * multiplier;
+                const prize = currentBet * opt.mult;
                 balance += prize;
-                statusEl.innerText = `VOCÊ GANHOU $${prize}!`;
+                statusEl.innerText = `GANHOU $${prize}!`;
                 statusEl.className = "status-msg win";
             } else {
-                statusEl.innerText = "VOCÊ PERDEU!";
+                statusEl.innerText = "PERDEU!";
                 statusEl.className = "status-msg lose";
             }
-
-            document.getElementById('balance').innerText = balance;
+            
+            currentBet = 0;
+            updateDisplay();
         }
+
+        // Inicializar
+        renderOptions();
+        updateDisplay();
     </script>
 </body>
 </html>
