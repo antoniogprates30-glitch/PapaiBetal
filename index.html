@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RedLuck - Pirate Edition</title>
+    <title>RedLuck - Gaming Edition</title>
     <style>
         :root {
             --primary-red: #e74c3c;
@@ -59,7 +59,7 @@
         }
         .btn-pill.selected { border-color: var(--accent-gold); background: #2a2a2a; }
 
-        /* SLIDER BOMBAS */
+        /* MINES CONFIG */
         .mines-config { background: #000; padding: 15px; border-radius: 15px; border: 1px solid #333; margin-top: 5px; }
         .mines-config label { font-size: 0.8rem; color: #777; display: block; margin-bottom: 10px; }
         .slider { width: 100%; cursor: pointer; accent-color: var(--primary-red); }
@@ -79,12 +79,7 @@
             justify-content: center; color: #444; font-size: 1.8rem; transition: 0.2s;
         }
         .mine-btn.revealed-star { background: #1a1a1a; color: var(--accent-gold); border-color: var(--accent-gold); box-shadow: 0 0 15px rgba(241, 196, 15, 0.2); }
-        .mine-btn.revealed-bomb { background: #451a1a; border-color: #f00; }
-
-        /* NAVIO */
-        #pirate-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
-        .ship-container { position: absolute; z-index: 10; width: 70px; }
-        .multiplier-text { font-size: 5rem; font-weight: bold; color: var(--accent-gold); z-index: 5; margin-top: -100px; text-shadow: 0 0 20px rgba(241, 196, 15, 0.4); }
+        .mine-btn.revealed-bomb { background: #451a1a; border-color: #f00; color: white; }
 
         .btn-action {
             width: 100%; padding: 18px; border-radius: var(--pill-radius);
@@ -106,9 +101,7 @@
     <nav class="sidebar">
         <h2>REDLUCK</h2>
         <button id="btn-dice" class="active" onclick="setGame('dice')">🎲 DADOS</button>
-        <button id="btn-coin" onclick="setGame('coin')">🪙 CARA OU COROA</button>
         <button id="btn-mines" onclick="setGame('mines')">💣 MINES</button>
-        <button id="btn-pirate" onclick="setGame('pirate')">🚢 NAVIO PIRATA</button>
     </nav>
 
     <main class="main-content">
@@ -136,15 +129,8 @@
         </section>
 
         <section class="game-area">
-            <canvas id="pirate-canvas"></canvas>
-            <div id="simple-visual" style="font-size: 8rem;">🎲</div>
+            <div id="simple-visual" style="font-size: 8rem; transition: transform 0.5s;">🎲</div>
             <div id="mines-container" class="mines-grid hidden"></div>
-            <div id="pirate-scene" class="hidden">
-                <div class="multiplier-text" id="crash-mult">1.00x</div>
-                <div class="ship-container" id="ship-wrapper">
-                    <svg viewBox="0 0 64 64"><path d="M10 40 L54 40 L48 52 L16 52 Z M32 10 L32 40 M32 15 L50 30 L32 30 Z" stroke="white" stroke-width="2" fill="none"/></svg>
-                </div>
-            </div>
             <div id="status-msg"></div>
         </section>
     </main>
@@ -158,33 +144,50 @@
             document.getElementById('bet-amount').innerText = bet;
         }
 
-        function modBet(val) { if (!isMinesActive && balance >= bet + val) { bet += val; updateUI(); } }
-        function updateBombDisplay() { document.getElementById('bomb-count-display').innerText = document.getElementById('bomb-range').value; }
+        function modBet(val) { 
+            if (!isMinesActive && balance >= bet + val) { 
+                bet += val; 
+                updateUI(); 
+            } 
+        }
+
+        function updateBombDisplay() { 
+            document.getElementById('bomb-count-display').innerText = document.getElementById('bomb-range').value; 
+        }
 
         function setGame(game) {
-            currentGame = game; isMinesActive = false;
+            currentGame = game; 
+            isMinesActive = false;
+            
             document.querySelectorAll('.sidebar button').forEach(b => b.classList.remove('active'));
             document.getElementById('btn-' + game).classList.add('active');
             
-            document.getElementById('simple-visual').classList.toggle('hidden', game !== 'dice' && game !== 'coin');
+            document.getElementById('simple-visual').classList.toggle('hidden', game !== 'dice');
             document.getElementById('mines-container').classList.toggle('hidden', game !== 'mines');
             document.getElementById('mines-config-area').classList.toggle('hidden', game !== 'mines');
-            document.getElementById('pirate-scene').classList.toggle('hidden', game !== 'pirate');
-            document.getElementById('game-options').classList.toggle('hidden', game === 'mines' || game === 'pirate');
+            document.getElementById('game-options').classList.toggle('hidden', game === 'mines');
             
-            document.getElementById('main-action-btn').innerText = (game === 'pirate') ? "ZARPAR" : (game === 'mines' ? "COMEÇAR" : "JOGAR");
+            document.getElementById('main-action-btn').innerText = (game === 'mines' ? "COMEÇAR" : "JOGAR");
             document.getElementById('status-msg').innerText = "";
+            document.getElementById('status-msg').style.color = "white";
             
             if (game === 'mines') initMines();
-            else if (game === 'dice' || game === 'coin') setupSimpleOptions(game);
+            else setupSimpleOptions();
         }
 
-        function setupSimpleOptions(game) {
-            const optCont = document.getElementById('game-options'); optCont.innerHTML = "";
-            const options = game === 'dice' ? ['Par', 'Ímpar'] : ['Cara', 'Coroa'];
+        function setupSimpleOptions() {
+            const optCont = document.getElementById('game-options'); 
+            optCont.innerHTML = "";
+            const options = ['Par', 'Ímpar'];
             options.forEach(o => {
-                let b = document.createElement('button'); b.className = 'btn-pill'; b.innerText = o;
-                b.onclick = () => { selectedOption = o; document.querySelectorAll('#game-options .btn-pill').forEach(btn => btn.classList.remove('selected')); b.classList.add('selected'); };
+                let b = document.createElement('button'); 
+                b.className = 'btn-pill'; 
+                b.innerText = o;
+                b.onclick = () => { 
+                    selectedOption = o; 
+                    document.querySelectorAll('#game-options .btn-pill').forEach(btn => btn.classList.remove('selected')); 
+                    b.classList.add('selected'); 
+                };
                 optCont.appendChild(b);
             });
         }
@@ -193,33 +196,43 @@
             if (bet <= 0) return;
             if (currentGame === 'mines') {
                 if (!isMinesActive) startMines(); else cashOutMines();
-            } else if (currentGame === 'pirate') {
-                // (Lógica do Navio aqui se quiser integrar)
             } else {
-                playSimple();
+                playDice();
             }
         }
 
-        // --- LÓGICA MINES CORRIGIDA ---
+        /* LÓGICA MINES */
         function initMines() {
-            const cont = document.getElementById('mines-container'); cont.innerHTML = "";
+            const cont = document.getElementById('mines-container'); 
+            cont.innerHTML = "";
             for (let i = 0; i < 25; i++) {
-                let b = document.createElement('button'); b.className = 'mine-btn'; b.innerHTML = "★";
-                b.dataset.id = i; b.onclick = () => clickMine(i, b); cont.appendChild(b);
+                let b = document.createElement('button'); 
+                b.className = 'mine-btn'; 
+                b.innerHTML = "★";
+                b.dataset.id = i; 
+                b.onclick = () => clickMine(i, b); 
+                cont.appendChild(b);
             }
         }
 
         function startMines() {
+            if (balance < bet) return;
             const numBombs = parseInt(document.getElementById('bomb-range').value);
-            balance -= bet; isMinesActive = true; minesFound = 0;
+            balance -= bet; 
+            isMinesActive = true; 
+            minesFound = 0;
             mineLocations = [];
+            
             while (mineLocations.length < numBombs) {
                 let r = Math.floor(Math.random() * 25);
                 if (!mineLocations.includes(r)) mineLocations.push(r);
             }
+            
             document.getElementById('main-action-btn').innerText = "CASH OUT";
             document.getElementById('bomb-range').disabled = true;
             document.getElementById('status-msg').innerText = "BOA SORTE!";
+            document.getElementById('status-msg').style.color = "white";
+            updateUI();
         }
 
         function clickMine(id, btn) {
@@ -227,53 +240,86 @@
             btn.disabled = true;
 
             if (mineLocations.includes(id)) {
-                btn.innerHTML = "💣"; btn.classList.add('revealed-bomb'); gameOverMines();
+                btn.innerHTML = "💣"; 
+                btn.classList.add('revealed-bomb'); 
+                gameOverMines();
             } else {
-                btn.innerHTML = "★"; btn.classList.add('revealed-star'); minesFound++;
+                btn.innerHTML = "💎"; 
+                btn.classList.add('revealed-star'); 
+                minesFound++;
                 let mult = calculateMinesMultiplier();
-                document.getElementById('status-msg').innerText = `LUCRO: ${(bet * mult).toFixed(2)}`;
+                document.getElementById('status-msg').innerText = `LUCRO: $${(bet * mult).toFixed(2)}`;
             }
         }
 
         function calculateMinesMultiplier() {
             const n = 25, b = parseInt(document.getElementById('bomb-range').value), h = minesFound;
-            // Cálculo simplificado de lucro baseado em probabilidade
-            return (1 / ( (n-b)/n * (n-b-1)/(n-1) * (n-b-h+1)/(n-h+1) )) * 0.95; 
+            // Cálculo probabilístico real simplificado com margem da casa (0.95)
+            let prob = 1;
+            for (let i = 0; i < h; i++) {
+                prob *= (n - b - i) / (n - i);
+            }
+            return (1 / prob) * 0.95; 
         }
 
         function cashOutMines() {
             if (minesFound === 0) return;
             let win = bet * calculateMinesMultiplier();
-            balance += win; endMines(`GANHOU: $${win.toFixed(2)}`, "var(--accent-gold)");
+            balance += win; 
+            endMines(`GANHOU: $${win.toFixed(2)}`, "var(--accent-gold)");
         }
 
-        function gameOverMines() { endMines("BUM! VOCÊ PERDEU.", "#e74c3c"); }
+        function gameOverMines() { 
+            endMines("BUM! VOCÊ PERDEU.", "var(--primary-red)"); 
+        }
 
         function endMines(msg, color) {
-            isMinesActive = false; document.getElementById('status-msg').innerText = msg;
+            isMinesActive = false; 
+            document.getElementById('status-msg').innerText = msg;
             document.getElementById('status-msg').style.color = color;
             document.getElementById('main-action-btn').innerText = "COMEÇAR";
             document.getElementById('bomb-range').disabled = false;
-            bet = 0; updateUI();
-            setTimeout(initMines, 2000);
+            bet = 0; 
+            updateUI();
+            // Revelar todas as bombas (opcional)
+            setTimeout(initMines, 2500);
         }
 
-        function playSimple() {
-            if (!selectedOption) return;
+        /* LÓGICA DADOS */
+        function playDice() {
+            if (!selectedOption) {
+                document.getElementById('status-msg').innerText = "Escolha Par ou Ímpar!";
+                return;
+            }
             balance -= bet;
             const visual = document.getElementById('simple-visual');
-            visual.style.transform = "rotate(360deg)";
+            visual.style.transform = "rotate(720deg)";
+            
             setTimeout(() => {
                 visual.style.transform = "rotate(0deg)";
-                let res = currentGame === 'dice' ? Math.floor(Math.random() * 6) + 1 : (Math.random() > 0.5 ? 'Cara' : 'Coroa');
-                visual.innerText = (currentGame === 'dice') ? res : (res === 'Cara' ? '🌞' : '🌛');
-                let won = (currentGame === 'dice') ? (selectedOption === 'Par' && res % 2 === 0 || selectedOption === 'Ímpar' && res % 2 !== 0) : (selectedOption === res);
-                if (won) { balance += bet * 2; document.getElementById('status-msg').innerText = "VENCEU!"; } else { document.getElementById('status-msg').innerText = "PERDEU!"; }
-                bet = 0; updateUI();
-            }, 500);
+                let res = Math.floor(Math.random() * 6) + 1;
+                visual.innerText = (res === 1 ? '⚀' : res === 2 ? '⚁' : res === 3 ? '⚂' : res === 4 ? '⚃' : res === 5 ? '⚄' : '⚅');
+                
+                let isEven = res % 2 === 0;
+                let won = (selectedOption === 'Par' && isEven) || (selectedOption === 'Ímpar' && !isEven);
+                
+                if (won) { 
+                    let win = bet * 1.95;
+                    balance += win; 
+                    document.getElementById('status-msg').innerText = `VENCEU! +$${win.toFixed(2)}`;
+                    document.getElementById('status-msg').style.color = "var(--accent-gold)";
+                } else { 
+                    document.getElementById('status-msg').innerText = "PERDEU!"; 
+                    document.getElementById('status-msg').style.color = "var(--primary-red)";
+                }
+                bet = 0; 
+                updateUI();
+            }, 600);
         }
 
-        setGame('dice'); updateUI();
+        // Início
+        setGame('dice');
+        updateUI();
     </script>
 </body>
 </html>
