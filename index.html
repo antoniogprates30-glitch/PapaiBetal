@@ -1,93 +1,174 @@
-// --- ATUALIZAÇÃO DA LÓGICA DE SALDO ---
+<section class="bet-panel">
+    <div class="bet-section">
+        <label class="section-label">VALOR DA APOSTA</label>
+        <div class="display-bet">
+            $<span id="bet-amount">0</span>
+        </div>
+        <div class="pill-grid">
+            <button class="btn-pill" onclick="modBet(1)">+1</button>
+            <button class="btn-pill" onclick="modBet(10)">+10</button>
+            <button class="btn-pill" onclick="modBet(50)">+50</button>
+            <button class="btn-pill" onclick="modBet(100)">+100</button>
+        </div>
+        <button class="btn-pill" style="width: 100%; margin-top: 5px; background: #333;" onclick="resetBet()">LIMPAR</button>
+    </div>
+
+    <hr style="border: 0; border-top: 1px solid #333; margin: 10px 0;">
+
+    <div id="mines-config-area" class="mines-config hidden">
+        <label class="section-label">BOMBAS: <span id="bomb-count-display" style="color:white">3</span></label>
+        <input type="range" min="1" max="24" value="3" class="slider" id="bomb-range" oninput="updateBombDisplay()">
+    </div>
+
+    <div id="dice-options-area">
+        <label class="section-label">TIPO DE APOSTA (PAR/ÍMPAR)</label>
+        <div id="game-options" class="pill-grid">
+            </div>
+
+        <label class="section-label" style="margin-top: 15px;">OU NÚMERO ESPECÍFICO</label>
+        <div id="number-options" class="pill-grid" style="grid-template-columns: repeat(3, 1fr);">
+            <button class="btn-pill btn-num" onclick="selectSpecific(1)">1</button>
+            <button class="btn-pill btn-num" onclick="selectSpecific(2)">2</button>
+            <button class="btn-pill btn-num" onclick="selectSpecific(3)">3</button>
+            <button class="btn-pill btn-num" onclick="selectSpecific(4)">4</button>
+            <button class="btn-pill btn-num" onclick="selectSpecific(5)">5</button>
+            <button class="btn-pill btn-num" onclick="selectSpecific(6)">6</button>
+        </div>
+    </div>
+
+    <button id="main-action-btn" class="btn-action" style="margin-top: 10px;" onclick="handleAction()">JOGAR</button>
+</section>
+
+<style>
+    /* Adicionando estilos para os rótulos de seção */
+    .section-label {
+        font-size: 0.65rem;
+        color: #777;
+        font-weight: bold;
+        display: block;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .btn-num { font-size: 1.1rem; }
+</style>
+
+<script>
+    let balance = 1000, bet = 0, currentGame = 'dice', selectedOption = null;
+    let isMinesActive = false, mineLocations = [], minesFound = 0;
+
+    function updateUI() {
+        document.getElementById('balance').innerText = Math.floor(balance);
+        document.getElementById('bet-amount').innerText = bet;
+    }
+
+    function modBet(val) { 
+        if (!isMinesActive && balance >= bet + val) { 
+            bet += val; updateUI(); 
+        } 
+    }
+    
+    function resetBet() { if(!isMinesActive) { bet = 0; updateUI(); } }
+
+    function updateBombDisplay() { 
+        document.getElementById('bomb-count-display').innerText = document.getElementById('bomb-range').value; 
+    }
+
+    // Seleção para números específicos (1-6)
+    function selectSpecific(num) {
+        selectedOption = num;
+        clearSelections();
+        const btns = document.querySelectorAll('#number-options .btn-pill');
+        btns[num-1].classList.add('selected');
+    }
+
+    function clearSelections() {
+        document.querySelectorAll('.btn-pill').forEach(btn => btn.classList.remove('selected'));
+    }
+
+    function setGame(game) {
+        currentGame = game; isMinesActive = false;
+        document.querySelectorAll('.sidebar button').forEach(b => b.classList.remove('active'));
+        document.getElementById('btn-' + game).classList.add('active');
         
-        function updateUI() {
-            // Agora o saldo mostrado é o saldo real. 
-            // Não subtraímos a 'bet' visualmente antes da hora.
-            document.getElementById('balance').innerText = Math.floor(balance);
-            document.getElementById('bet-amount').innerText = bet;
+        document.getElementById('simple-visual').classList.toggle('hidden', game !== 'dice');
+        document.getElementById('mines-container').classList.toggle('hidden', game !== 'mines');
+        document.getElementById('mines-config-area').classList.toggle('hidden', game !== 'mines');
+        document.getElementById('dice-options-area').classList.toggle('hidden', game !== 'dice');
+        
+        document.getElementById('main-action-btn').innerText = (game === 'mines' ? "COMEÇAR" : "JOGAR");
+        document.getElementById('status-msg').innerText = "";
+        
+        if (game === 'mines') initMines();
+        else setupSimpleOptions();
+    }
+
+    function setupSimpleOptions() {
+        const optCont = document.getElementById('game-options'); 
+        optCont.innerHTML = "";
+        ['Par', 'Ímpar'].forEach(o => {
+            let b = document.createElement('button');
+            b.className = 'btn-pill';
+            b.innerText = o;
+            b.onclick = () => { 
+                selectedOption = o; 
+                clearSelections();
+                b.classList.add('selected'); 
+            };
+            optCont.appendChild(b);
+        });
+    }
+
+    function handleAction() {
+        if (bet <= 0) return;
+        if (currentGame === 'mines') {
+            if (!isMinesActive) startMines(); else cashOutMines();
+        } else {
+            playDice();
         }
+    }
 
-        function modBet(val) { 
-            // Só permite aumentar a aposta se o saldo for suficiente
-            if (!isMinesActive && (balance >= bet + val)) { 
-                bet += val; 
-                updateUI(); 
-            } 
+    /* LOGICA DADOS ATUALIZADA */
+    function playDice() {
+        if (selectedOption === null) {
+            document.getElementById('status-msg').innerText = "Escolha onde apostar!";
+            return;
         }
-
-        /* LÓGICA DADOS ATUALIZADA */
-        function playDice() {
-            if (!selectedOption) {
-                document.getElementById('status-msg').innerText = "Escolha Par ou Ímpar!";
-                return;
-            }
-            if (bet <= 0 || balance < bet) return;
-
-            const visual = document.getElementById('simple-visual');
-            visual.style.transform = "rotate(720deg)";
+        
+        const visual = document.getElementById('simple-visual');
+        visual.style.transform = "rotate(720deg)";
+        
+        setTimeout(() => {
+            visual.style.transform = "rotate(0deg)";
+            let res = Math.floor(Math.random() * 6) + 1;
+            const diceFaces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+            visual.innerText = diceFaces[res-1];
             
-            setTimeout(() => {
-                visual.style.transform = "rotate(0deg)";
-                let res = Math.floor(Math.random() * 6) + 1;
-                visual.innerText = (res === 1 ? '⚀' : res === 2 ? '⚁' : res === 3 ? '⚂' : res === 4 ? '⚃' : res === 5 ? '⚄' : '⚅');
-                
-                let isEven = res % 2 === 0;
-                let won = (selectedOption === 'Par' && isEven) || (selectedOption === 'Ímpar' && !isEven);
-                
-                if (won) { 
-                    // Se ganhar, o saldo aumenta com o lucro (ex: 1.95x a aposta)
-                    let profit = bet * 0.95; 
-                    balance += profit; 
-                    document.getElementById('status-msg').innerText = `VENCEU! +$${profit.toFixed(2)}`;
-                    document.getElementById('status-msg').style.color = "var(--accent-gold)";
-                } else { 
-                    // Se perder, a aposta é descontada agora
-                    balance -= bet; 
-                    document.getElementById('status-msg').innerText = "PERDEU!"; 
-                    document.getElementById('status-msg').style.color = "var(--primary-red)";
-                }
-                
-                bet = 0; // Reseta aposta após a rodada
-                updateUI();
-            }, 600);
-        }
+            let won = false;
+            let multiplier = 1.95; // Multiplicador para Par/Ímpar
 
-        /* LÓGICA MINES ATUALIZADA */
-        function startMines() {
-            if (bet <= 0 || balance < bet) {
-                document.getElementById('status-msg').innerText = "Aposta Inválida!";
-                return;
-            }
-            
-            // Note que NÃO descontamos o balance aqui.
-            // O valor fica "preso" no jogo.
-            isMinesActive = true; 
-            minesFound = 0;
-            mineLocations = [];
-            
-            const numBombs = parseInt(document.getElementById('bomb-range').value);
-            while (mineLocations.length < numBombs) {
-                let r = Math.floor(Math.random() * 25);
-                if (!mineLocations.includes(r)) mineLocations.push(r);
+            if (typeof selectedOption === 'number') {
+                won = (res === selectedOption);
+                multiplier = 5.70; // Multiplicador maior para número exato (6x menos margem da casa)
+            } else {
+                won = (selectedOption === 'Par' && res % 2 === 0) || (selectedOption === 'Ímpar' && res % 2 !== 0);
             }
             
-            document.getElementById('main-action-btn').innerText = "CASH OUT";
-            document.getElementById('bomb-range').disabled = true;
-            document.getElementById('status-msg').innerText = "BOA SORTE!";
-            document.getElementById('status-msg').style.color = "white";
-        }
-
-        function cashOutMines() {
-            if (minesFound === 0) return;
+            if (won) {
+                let profit = bet * (multiplier - 1);
+                balance += profit;
+                document.getElementById('status-msg').innerText = `VENCEU! +$${(bet * multiplier).toFixed(2)}`;
+                document.getElementById('status-msg').style.color = "var(--accent-gold)";
+            } else {
+                balance -= bet;
+                document.getElementById('status-msg').innerText = "PERDEU!";
+                document.getElementById('status-msg').style.color = "var(--primary-red)";
+            }
             
-            let mult = calculateMinesMultiplier();
-            let profit = (bet * mult) - bet; // Calculamos apenas o lucro líquido em cima da aposta
-            balance += profit; 
-            
-            endMines(`GANHOU: $${(bet * mult).toFixed(2)}`, "var(--accent-gold)");
-        }
+            bet = 0;
+            updateUI();
+        }, 600);
+    }
 
-        function gameOverMines() { 
-            balance -= bet; // Perdeu? Agora o saldo diminui.
-            endMines("BUM! VOCÊ PERDEU.", "var(--primary-red)"); 
-        }
+    /* LOGICA MINES (Mantida conforme anterior, apenas ajustes de cashout) */
+    function initMines
