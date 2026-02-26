@@ -14,7 +14,7 @@
         }
 
         body {
-            margin: 0; font-family: 'Segoe UI', Roboto, sans-serif;
+            margin: 0; font-family: 'Segoe UI', sans-serif;
             background-color: var(--bg-dark); color: white;
             display: flex; height: 100vh; overflow: hidden;
         }
@@ -36,7 +36,6 @@
         /* MAIN CONTENT */
         .main-content { flex-grow: 1; display: flex; padding: 30px; gap: 20px; position: relative; }
 
-        /* HUD */
         .top-info { position: absolute; top: 20px; right: 40px; display: flex; gap: 15px; z-index: 100; }
         .hud-item {
             background: #151515; padding: 10px 25px; border-radius: 50px;
@@ -49,8 +48,7 @@
             display: flex; flex-direction: column; gap: 15px; border: 1px solid #222;
         }
         .display-bet {
-            background: #000; padding: 15px; border-radius: 15px; text-align: center;
-            border: 1px solid #333;
+            background: #000; padding: 15px; border-radius: 15px; text-align: center; border: 1px solid #333;
         }
         .display-bet span { font-size: 1.8rem; color: var(--accent-gold); font-weight: bold; }
 
@@ -60,7 +58,11 @@
             border-radius: var(--pill-radius); cursor: pointer; font-weight: bold; transition: 0.2s;
         }
         .btn-pill.selected { border-color: var(--accent-gold); background: #2a2a2a; }
-        .btn-clear { background: #8e1e13; grid-column: span 2; margin-top: 5px; }
+
+        /* SLIDER BOMBAS */
+        .mines-config { background: #000; padding: 15px; border-radius: 15px; border: 1px solid #333; margin-top: 5px; }
+        .mines-config label { font-size: 0.8rem; color: #777; display: block; margin-bottom: 10px; }
+        .slider { width: 100%; cursor: pointer; accent-color: var(--primary-red); }
 
         /* GAME AREA */
         .game-area {
@@ -69,29 +71,30 @@
             border: 1px solid #1a1a1a; overflow: hidden;
         }
 
-        /* MINES DESIGN CORRIGIDO */
+        /* MINES GRID */
         .mines-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
         .mine-btn {
-            width: 60px; height: 60px; background: #111; border: 1px solid #222;
+            width: 65px; height: 65px; background: #111; border: 1px solid #222;
             border-radius: 12px; cursor: pointer; display: flex; align-items: center;
-            justify-content: center; color: #444; font-size: 1.5rem; transition: 0.2s;
+            justify-content: center; color: #444; font-size: 1.8rem; transition: 0.2s;
         }
-        .mine-btn:hover { border-color: #555; background: #151515; }
+        .mine-btn.revealed-star { background: #1a1a1a; color: var(--accent-gold); border-color: var(--accent-gold); box-shadow: 0 0 15px rgba(241, 196, 15, 0.2); }
+        .mine-btn.revealed-bomb { background: #451a1a; border-color: #f00; }
 
-        /* NAVIO E TRAJETÓRIA */
+        /* NAVIO */
         #pirate-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
-        .ship-container { position: absolute; z-index: 10; width: 70px; transition: transform 0.1s linear; }
-        .multiplier-text { font-size: 5rem; font-weight: bold; color: var(--accent-gold); z-index: 5; margin-top: -100px; }
+        .ship-container { position: absolute; z-index: 10; width: 70px; }
+        .multiplier-text { font-size: 5rem; font-weight: bold; color: var(--accent-gold); z-index: 5; margin-top: -100px; text-shadow: 0 0 20px rgba(241, 196, 15, 0.4); }
 
         .btn-action {
             width: 100%; padding: 18px; border-radius: var(--pill-radius);
             border: none; background: var(--primary-red); color: white;
             font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: 0.2s;
         }
-        .btn-action:active { transform: scale(0.96); }
+        .btn-action:disabled { background: #333; cursor: not-allowed; }
 
+        #status-msg { margin-top: 20px; font-weight: bold; font-size: 1.2rem; height: 24px; text-transform: uppercase; }
         .hidden { display: none !important; }
-        #status-msg { margin-top: 20px; font-weight: bold; font-size: 1.2rem; height: 24px; text-transform: uppercase; letter-spacing: 1px; }
     </style>
 </head>
 <body>
@@ -120,7 +123,11 @@
                 <button class="btn-pill" onclick="modBet(10)">+10</button>
                 <button class="btn-pill" onclick="modBet(50)">+50</button>
                 <button class="btn-pill" onclick="modBet(100)">+100</button>
-                <button class="btn-pill btn-clear" onclick="clearBet()">ZERAR</button>
+            </div>
+
+            <div id="mines-config-area" class="mines-config hidden">
+                <label>BOMBAS: <span id="bomb-count-display" style="color:white">3</span></label>
+                <input type="range" min="1" max="24" value="3" class="slider" id="bomb-range" oninput="updateBombDisplay()">
             </div>
 
             <div id="game-options" class="pill-grid"></div>
@@ -130,170 +137,140 @@
 
         <section class="game-area">
             <canvas id="pirate-canvas"></canvas>
-            
             <div id="simple-visual" style="font-size: 8rem;">🎲</div>
-
             <div id="mines-container" class="mines-grid hidden"></div>
-
-            <div id="pirate-scene" class="hidden" style="flex-direction: column; align-items: center; width: 100%; height: 100%;">
+            <div id="pirate-scene" class="hidden">
                 <div class="multiplier-text" id="crash-mult">1.00x</div>
                 <div class="ship-container" id="ship-wrapper">
                     <svg viewBox="0 0 64 64"><path d="M10 40 L54 40 L48 52 L16 52 Z M32 10 L32 40 M32 15 L50 30 L32 30 Z" stroke="white" stroke-width="2" fill="none"/></svg>
                 </div>
             </div>
-
             <div id="status-msg"></div>
         </section>
     </main>
 
     <script>
         let balance = 1000, bet = 0, currentGame = 'dice', selectedOption = null;
-        let crashInterval, currentMult = 1.0, isPlayingCrash = false, points = [];
+        let isMinesActive = false, mineLocations = [], minesFound = 0;
 
         function updateUI() {
-            document.getElementById('balance').innerText = Math.floor(balance - bet);
+            document.getElementById('balance').innerText = Math.floor(balance - (isMinesActive ? 0 : bet));
             document.getElementById('bet-amount').innerText = bet;
         }
 
-        function modBet(val) { if (balance >= bet + val) { bet += val; updateUI(); } }
-        function clearBet() { bet = 0; updateUI(); }
+        function modBet(val) { if (!isMinesActive && balance >= bet + val) { bet += val; updateUI(); } }
+        function updateBombDisplay() { document.getElementById('bomb-count-display').innerText = document.getElementById('bomb-range').value; }
 
         function setGame(game) {
-            currentGame = game; selectedOption = null;
+            currentGame = game; isMinesActive = false;
             document.querySelectorAll('.sidebar button').forEach(b => b.classList.remove('active'));
             document.getElementById('btn-' + game).classList.add('active');
             
-            document.getElementById('simple-visual').classList.add('hidden');
-            document.getElementById('mines-container').classList.add('hidden');
-            document.getElementById('pirate-scene').classList.add('hidden');
-            document.getElementById('status-msg').innerText = "";
-            document.getElementById('main-action-btn').innerText = (game === 'pirate') ? "ZARPAR" : "JOGAR";
+            document.getElementById('simple-visual').classList.toggle('hidden', game !== 'dice' && game !== 'coin');
+            document.getElementById('mines-container').classList.toggle('hidden', game !== 'mines');
+            document.getElementById('mines-config-area').classList.toggle('hidden', game !== 'mines');
+            document.getElementById('pirate-scene').classList.toggle('hidden', game !== 'pirate');
+            document.getElementById('game-options').classList.toggle('hidden', game === 'mines' || game === 'pirate');
             
-            const optCont = document.getElementById('game-options');
-            optCont.innerHTML = "";
+            document.getElementById('main-action-btn').innerText = (game === 'pirate') ? "ZARPAR" : (game === 'mines' ? "COMEÇAR" : "JOGAR");
+            document.getElementById('status-msg').innerText = "";
+            
+            if (game === 'mines') initMines();
+            else if (game === 'dice' || game === 'coin') setupSimpleOptions(game);
+        }
 
-            if(game === 'dice' || game === 'coin') {
-                document.getElementById('simple-visual').classList.remove('hidden');
-                document.getElementById('simple-visual').innerText = game === 'dice' ? '🎲' : '🪙';
-                const options = game === 'dice' ? ['Par', 'Ímpar'] : ['Cara', 'Coroa'];
-                options.forEach(o => {
-                    let b = document.createElement('button');
-                    b.className = 'btn-pill'; b.innerText = o;
-                    b.onclick = () => {
-                        selectedOption = o;
-                        document.querySelectorAll('#game-options .btn-pill').forEach(btn => btn.classList.remove('selected'));
-                        b.classList.add('selected');
-                    };
-                    optCont.appendChild(b);
-                });
-            } else if(game === 'pirate') {
-                document.getElementById('pirate-scene').classList.remove('hidden');
-                resetPirate();
-            } else if(game === 'mines') {
-                document.getElementById('mines-container').classList.remove('hidden');
-                initMines();
-            }
+        function setupSimpleOptions(game) {
+            const optCont = document.getElementById('game-options'); optCont.innerHTML = "";
+            const options = game === 'dice' ? ['Par', 'Ímpar'] : ['Cara', 'Coroa'];
+            options.forEach(o => {
+                let b = document.createElement('button'); b.className = 'btn-pill'; b.innerText = o;
+                b.onclick = () => { selectedOption = o; document.querySelectorAll('#game-options .btn-pill').forEach(btn => btn.classList.remove('selected')); b.classList.add('selected'); };
+                optCont.appendChild(b);
+            });
         }
 
         function handleAction() {
-            if(bet <= 0) return;
-            if(currentGame === 'pirate') {
-                if(!isPlayingCrash) startCrash(); else stopCrash();
+            if (bet <= 0) return;
+            if (currentGame === 'mines') {
+                if (!isMinesActive) startMines(); else cashOutMines();
+            } else if (currentGame === 'pirate') {
+                // (Lógica do Navio aqui se quiser integrar)
             } else {
                 playSimple();
             }
         }
 
-        // --- PIRATE LOGIC ---
-        function resetPirate() {
-            currentMult = 1.0; points = [];
-            document.getElementById('crash-mult').innerText = "1.00x";
-            const canvas = document.getElementById('pirate-canvas');
-            const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            const ship = document.getElementById('ship-wrapper');
-            ship.style.left = "50px"; ship.style.bottom = "50px"; ship.style.top = "auto";
+        // --- LÓGICA MINES CORRIGIDA ---
+        function initMines() {
+            const cont = document.getElementById('mines-container'); cont.innerHTML = "";
+            for (let i = 0; i < 25; i++) {
+                let b = document.createElement('button'); b.className = 'mine-btn'; b.innerHTML = "★";
+                b.dataset.id = i; b.onclick = () => clickMine(i, b); cont.appendChild(b);
+            }
         }
 
-        function drawTrail() {
-            const canvas = document.getElementById('pirate-canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
-            ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 3; ctx.beginPath();
-            points.forEach((p, i) => { if(i===0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y); });
-            ctx.stroke();
+        function startMines() {
+            const numBombs = parseInt(document.getElementById('bomb-range').value);
+            balance -= bet; isMinesActive = true; minesFound = 0;
+            mineLocations = [];
+            while (mineLocations.length < numBombs) {
+                let r = Math.floor(Math.random() * 25);
+                if (!mineLocations.includes(r)) mineLocations.push(r);
+            }
+            document.getElementById('main-action-btn').innerText = "CASH OUT";
+            document.getElementById('bomb-range').disabled = true;
+            document.getElementById('status-msg').innerText = "BOA SORTE!";
         }
 
-        function startCrash() {
-            isPlayingCrash = true; balance -= bet; resetPirate();
-            document.getElementById('main-action-btn').innerText = "RESGATAR";
-            let crashPoint = Math.random() * 3 + 1.1;
+        function clickMine(id, btn) {
+            if (!isMinesActive || btn.disabled) return;
+            btn.disabled = true;
 
-            crashInterval = setInterval(() => {
-                currentMult += 0.01;
-                document.getElementById('crash-mult').innerText = currentMult.toFixed(2) + "x";
-                const canvas = document.getElementById('pirate-canvas');
-                const ship = document.getElementById('ship-wrapper');
-
-                const x = (currentMult - 1) * 120 + 50;
-                const y = canvas.height - (Math.log(currentMult) * 250 + 80);
-                
-                ship.style.left = `${x}px`; ship.style.top = `${y}px`;
-                points.push({x: x + 35, y: y + 50});
-                drawTrail();
-
-                if(currentMult >= crashPoint) gameOverCrash();
-            }, 60);
+            if (mineLocations.includes(id)) {
+                btn.innerHTML = "💣"; btn.classList.add('revealed-bomb'); gameOverMines();
+            } else {
+                btn.innerHTML = "★"; btn.classList.add('revealed-star'); minesFound++;
+                let mult = calculateMinesMultiplier();
+                document.getElementById('status-msg').innerText = `LUCRO: ${(bet * mult).toFixed(2)}`;
+            }
         }
 
-        function stopCrash() {
-            clearInterval(crashInterval); isPlayingCrash = false;
-            let win = bet * currentMult; balance += win;
-            document.getElementById('status-msg').innerText = "GANHOU: $" + win.toFixed(2);
-            document.getElementById('main-action-btn').innerText = "ZARPAR";
+        function calculateMinesMultiplier() {
+            const n = 25, b = parseInt(document.getElementById('bomb-range').value), h = minesFound;
+            // Cálculo simplificado de lucro baseado em probabilidade
+            return (1 / ( (n-b)/n * (n-b-1)/(n-1) * (n-b-h+1)/(n-h+1) )) * 0.95; 
+        }
+
+        function cashOutMines() {
+            if (minesFound === 0) return;
+            let win = bet * calculateMinesMultiplier();
+            balance += win; endMines(`GANHOU: $${win.toFixed(2)}`, "var(--accent-gold)");
+        }
+
+        function gameOverMines() { endMines("BUM! VOCÊ PERDEU.", "#e74c3c"); }
+
+        function endMines(msg, color) {
+            isMinesActive = false; document.getElementById('status-msg').innerText = msg;
+            document.getElementById('status-msg').style.color = color;
+            document.getElementById('main-action-btn').innerText = "COMEÇAR";
+            document.getElementById('bomb-range').disabled = false;
             bet = 0; updateUI();
+            setTimeout(initMines, 2000);
         }
 
-        function gameOverCrash() {
-            clearInterval(crashInterval); isPlayingCrash = false;
-            document.getElementById('status-msg').innerText = "NAVIO AFUNDOU!";
-            document.getElementById('main-action-btn').innerText = "ZARPAR";
-            bet = 0; updateUI();
-        }
-
-        // --- SIMPLE GAMES ---
         function playSimple() {
-            if(!selectedOption) return;
+            if (!selectedOption) return;
             balance -= bet;
             const visual = document.getElementById('simple-visual');
             visual.style.transform = "rotate(360deg)";
             setTimeout(() => {
                 visual.style.transform = "rotate(0deg)";
-                let won = false;
-                if(currentGame === 'dice') {
-                    let res = Math.floor(Math.random() * 6) + 1;
-                    visual.innerText = res;
-                    won = (selectedOption === 'Par' && res % 2 === 0) || (selectedOption === 'Ímpar' && res % 2 !== 0);
-                } else {
-                    let res = Math.random() > 0.5 ? 'Cara' : 'Coroa';
-                    visual.innerText = (res === 'Cara') ? '🌞' : '🌛';
-                    won = (selectedOption === res);
-                }
-                if(won) { balance += bet * 2; document.getElementById('status-msg').innerText = "VENCEU!"; }
-                else { document.getElementById('status-msg').innerText = "PERDEU!"; }
+                let res = currentGame === 'dice' ? Math.floor(Math.random() * 6) + 1 : (Math.random() > 0.5 ? 'Cara' : 'Coroa');
+                visual.innerText = (currentGame === 'dice') ? res : (res === 'Cara' ? '🌞' : '🌛');
+                let won = (currentGame === 'dice') ? (selectedOption === 'Par' && res % 2 === 0 || selectedOption === 'Ímpar' && res % 2 !== 0) : (selectedOption === res);
+                if (won) { balance += bet * 2; document.getElementById('status-msg').innerText = "VENCEU!"; } else { document.getElementById('status-msg').innerText = "PERDEU!"; }
                 bet = 0; updateUI();
             }, 500);
-        }
-
-        // --- MINES ---
-        function initMines() {
-            const cont = document.getElementById('mines-container'); cont.innerHTML = "";
-            for(let i=0; i<25; i++) {
-                let b = document.createElement('button');
-                b.className = 'mine-btn'; b.innerHTML = "★";
-                b.onclick = () => { b.style.color = "var(--accent-gold)"; b.style.borderColor = "var(--accent-gold)"; };
-                cont.appendChild(b);
-            }
         }
 
         setGame('dice'); updateUI();
