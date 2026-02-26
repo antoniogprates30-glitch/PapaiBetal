@@ -1,297 +1,28 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RedLuck - Gaming Edition</title>
-    <style>
-        :root {
-            --primary-red: #e74c3c;
-            --accent-gold: #f1c40f;
-            --bg-dark: #0a0a0a;
-            --card-bg: #151515;
-            --pill-radius: 50px;
-        }
-
-        body {
-            margin: 0; font-family: 'Segoe UI', sans-serif;
-            background-color: var(--bg-dark); color: white;
-            display: flex; height: 100vh; overflow: hidden;
-        }
-
-        /* SIDEBAR */
-        .sidebar {
-            width: 260px; background: #111; border-right: 1px solid #222;
-            display: flex; flex-direction: column; padding: 25px; gap: 10px;
-        }
-        .sidebar h2 { color: var(--primary-red); text-align: center; letter-spacing: 3px; margin-bottom: 30px; }
-        .sidebar button {
-            background: transparent; border: none; color: #555; padding: 14px;
-            text-align: left; cursor: pointer; border-radius: 12px; transition: 0.3s;
-            font-weight: bold; font-size: 0.95rem;
-        }
-        .sidebar button.active { background: var(--primary-red); color: white; }
-        .sidebar button:hover:not(.active) { background: #1a1a1a; color: white; }
-
-        /* MAIN CONTENT */
-        .main-content { flex-grow: 1; display: flex; padding: 30px; gap: 20px; position: relative; }
-
-        .top-info { position: absolute; top: 20px; right: 40px; display: flex; gap: 15px; z-index: 100; }
-        .hud-item {
-            background: #151515; padding: 10px 25px; border-radius: 50px;
-            border: 1px solid var(--primary-red); font-weight: bold; font-size: 1.1rem;
-        }
-
-        /* BET PANEL */
-        .bet-panel {
-            width: 300px; background: var(--card-bg); padding: 20px; border-radius: 20px;
-            display: flex; flex-direction: column; gap: 15px; border: 1px solid #222;
-        }
-        .display-bet {
-            background: #000; padding: 15px; border-radius: 15px; text-align: center; border: 1px solid #333;
-        }
-        .display-bet span { font-size: 1.8rem; color: var(--accent-gold); font-weight: bold; }
-
-        .pill-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-        .btn-pill {
-            background: #222; border: 2px solid transparent; color: white; padding: 12px;
-            border-radius: var(--pill-radius); cursor: pointer; font-weight: bold; transition: 0.2s;
-        }
-        .btn-pill.selected { border-color: var(--accent-gold); background: #2a2a2a; }
-
-        /* MINES CONFIG */
-        .mines-config { background: #000; padding: 15px; border-radius: 15px; border: 1px solid #333; margin-top: 5px; }
-        .mines-config label { font-size: 0.8rem; color: #777; display: block; margin-bottom: 10px; }
-        .slider { width: 100%; cursor: pointer; accent-color: var(--primary-red); }
-
-        /* GAME AREA */
-        .game-area {
-            flex-grow: 1; background: #000; border-radius: 25px; position: relative;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            border: 1px solid #1a1a1a; overflow: hidden;
-        }
-
-        /* MINES GRID */
-        .mines-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
-        .mine-btn {
-            width: 65px; height: 65px; background: #111; border: 1px solid #222;
-            border-radius: 12px; cursor: pointer; display: flex; align-items: center;
-            justify-content: center; color: #444; font-size: 1.8rem; transition: 0.2s;
-        }
-        .mine-btn.revealed-star { background: #1a1a1a; color: var(--accent-gold); border-color: var(--accent-gold); box-shadow: 0 0 15px rgba(241, 196, 15, 0.2); }
-        .mine-btn.revealed-bomb { background: #451a1a; border-color: #f00; color: white; }
-
-        .btn-action {
-            width: 100%; padding: 18px; border-radius: var(--pill-radius);
-            border: none; background: var(--primary-red); color: white;
-            font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: 0.2s;
-        }
-        .btn-action:disabled { background: #333; cursor: not-allowed; }
-
-        #status-msg { margin-top: 20px; font-weight: bold; font-size: 1.2rem; height: 24px; text-transform: uppercase; }
-        .hidden { display: none !important; }
-    </style>
-</head>
-<body>
-
-    <div class="top-info">
-        <div class="hud-item">$ <span id="balance">1000</span></div>
-    </div>
-
-    <nav class="sidebar">
-        <h2>REDLUCK</h2>
-        <button id="btn-dice" class="active" onclick="setGame('dice')">🎲 DADOS</button>
-        <button id="btn-mines" onclick="setGame('mines')">💣 MINES</button>
-    </nav>
-
-    <main class="main-content">
-        <section class="bet-panel">
-            <div class="display-bet">
-                <label style="color:#555; font-size:0.7rem; font-weight:bold">APOSTA</label><br>
-                $<span id="bet-amount">0</span>
-            </div>
-            
-            <div class="pill-grid">
-                <button class="btn-pill" onclick="modBet(1)">+1</button>
-                <button class="btn-pill" onclick="modBet(10)">+10</button>
-                <button class="btn-pill" onclick="modBet(50)">+50</button>
-                <button class="btn-pill" onclick="modBet(100)">+100</button>
-            </div>
-
-            <div id="mines-config-area" class="mines-config hidden">
-                <label>BOMBAS: <span id="bomb-count-display" style="color:white">3</span></label>
-                <input type="range" min="1" max="24" value="3" class="slider" id="bomb-range" oninput="updateBombDisplay()">
-            </div>
-
-            <div id="game-options" class="pill-grid"></div>
-
-            <button id="main-action-btn" class="btn-action" onclick="handleAction()">JOGAR</button>
-        </section>
-
-        <section class="game-area">
-            <div id="simple-visual" style="font-size: 8rem; transition: transform 0.5s;">🎲</div>
-            <div id="mines-container" class="mines-grid hidden"></div>
-            <div id="status-msg"></div>
-        </section>
-    </main>
-
-    <script>
-        let balance = 1000, bet = 0, currentGame = 'dice', selectedOption = null;
-        let isMinesActive = false, mineLocations = [], minesFound = 0;
-
+// --- ATUALIZAÇÃO DA LÓGICA DE SALDO ---
+        
         function updateUI() {
-            document.getElementById('balance').innerText = Math.floor(balance - (isMinesActive ? 0 : bet));
+            // Agora o saldo mostrado é o saldo real. 
+            // Não subtraímos a 'bet' visualmente antes da hora.
+            document.getElementById('balance').innerText = Math.floor(balance);
             document.getElementById('bet-amount').innerText = bet;
         }
 
         function modBet(val) { 
-            if (!isMinesActive && balance >= bet + val) { 
+            // Só permite aumentar a aposta se o saldo for suficiente
+            if (!isMinesActive && (balance >= bet + val)) { 
                 bet += val; 
                 updateUI(); 
             } 
         }
 
-        function updateBombDisplay() { 
-            document.getElementById('bomb-count-display').innerText = document.getElementById('bomb-range').value; 
-        }
-
-        function setGame(game) {
-            currentGame = game; 
-            isMinesActive = false;
-            
-            document.querySelectorAll('.sidebar button').forEach(b => b.classList.remove('active'));
-            document.getElementById('btn-' + game).classList.add('active');
-            
-            document.getElementById('simple-visual').classList.toggle('hidden', game !== 'dice');
-            document.getElementById('mines-container').classList.toggle('hidden', game !== 'mines');
-            document.getElementById('mines-config-area').classList.toggle('hidden', game !== 'mines');
-            document.getElementById('game-options').classList.toggle('hidden', game === 'mines');
-            
-            document.getElementById('main-action-btn').innerText = (game === 'mines' ? "COMEÇAR" : "JOGAR");
-            document.getElementById('status-msg').innerText = "";
-            document.getElementById('status-msg').style.color = "white";
-            
-            if (game === 'mines') initMines();
-            else setupSimpleOptions();
-        }
-
-        function setupSimpleOptions() {
-            const optCont = document.getElementById('game-options'); 
-            optCont.innerHTML = "";
-            const options = ['Par', 'Ímpar'];
-            options.forEach(o => {
-                let b = document.createElement('button'); 
-                b.className = 'btn-pill'; 
-                b.innerText = o;
-                b.onclick = () => { 
-                    selectedOption = o; 
-                    document.querySelectorAll('#game-options .btn-pill').forEach(btn => btn.classList.remove('selected')); 
-                    b.classList.add('selected'); 
-                };
-                optCont.appendChild(b);
-            });
-        }
-
-        function handleAction() {
-            if (bet <= 0) return;
-            if (currentGame === 'mines') {
-                if (!isMinesActive) startMines(); else cashOutMines();
-            } else {
-                playDice();
-            }
-        }
-
-        /* LÓGICA MINES */
-        function initMines() {
-            const cont = document.getElementById('mines-container'); 
-            cont.innerHTML = "";
-            for (let i = 0; i < 25; i++) {
-                let b = document.createElement('button'); 
-                b.className = 'mine-btn'; 
-                b.innerHTML = "★";
-                b.dataset.id = i; 
-                b.onclick = () => clickMine(i, b); 
-                cont.appendChild(b);
-            }
-        }
-
-        function startMines() {
-            if (balance < bet) return;
-            const numBombs = parseInt(document.getElementById('bomb-range').value);
-            balance -= bet; 
-            isMinesActive = true; 
-            minesFound = 0;
-            mineLocations = [];
-            
-            while (mineLocations.length < numBombs) {
-                let r = Math.floor(Math.random() * 25);
-                if (!mineLocations.includes(r)) mineLocations.push(r);
-            }
-            
-            document.getElementById('main-action-btn').innerText = "CASH OUT";
-            document.getElementById('bomb-range').disabled = true;
-            document.getElementById('status-msg').innerText = "BOA SORTE!";
-            document.getElementById('status-msg').style.color = "white";
-            updateUI();
-        }
-
-        function clickMine(id, btn) {
-            if (!isMinesActive || btn.disabled) return;
-            btn.disabled = true;
-
-            if (mineLocations.includes(id)) {
-                btn.innerHTML = "💣"; 
-                btn.classList.add('revealed-bomb'); 
-                gameOverMines();
-            } else {
-                btn.innerHTML = "💎"; 
-                btn.classList.add('revealed-star'); 
-                minesFound++;
-                let mult = calculateMinesMultiplier();
-                document.getElementById('status-msg').innerText = `LUCRO: $${(bet * mult).toFixed(2)}`;
-            }
-        }
-
-        function calculateMinesMultiplier() {
-            const n = 25, b = parseInt(document.getElementById('bomb-range').value), h = minesFound;
-            // Cálculo probabilístico real simplificado com margem da casa (0.95)
-            let prob = 1;
-            for (let i = 0; i < h; i++) {
-                prob *= (n - b - i) / (n - i);
-            }
-            return (1 / prob) * 0.95; 
-        }
-
-        function cashOutMines() {
-            if (minesFound === 0) return;
-            let win = bet * calculateMinesMultiplier();
-            balance += win; 
-            endMines(`GANHOU: $${win.toFixed(2)}`, "var(--accent-gold)");
-        }
-
-        function gameOverMines() { 
-            endMines("BUM! VOCÊ PERDEU.", "var(--primary-red)"); 
-        }
-
-        function endMines(msg, color) {
-            isMinesActive = false; 
-            document.getElementById('status-msg').innerText = msg;
-            document.getElementById('status-msg').style.color = color;
-            document.getElementById('main-action-btn').innerText = "COMEÇAR";
-            document.getElementById('bomb-range').disabled = false;
-            bet = 0; 
-            updateUI();
-            // Revelar todas as bombas (opcional)
-            setTimeout(initMines, 2500);
-        }
-
-        /* LÓGICA DADOS */
+        /* LÓGICA DADOS ATUALIZADA */
         function playDice() {
             if (!selectedOption) {
                 document.getElementById('status-msg').innerText = "Escolha Par ou Ímpar!";
                 return;
             }
-            balance -= bet;
+            if (bet <= 0 || balance < bet) return;
+
             const visual = document.getElementById('simple-visual');
             visual.style.transform = "rotate(720deg)";
             
@@ -304,22 +35,59 @@
                 let won = (selectedOption === 'Par' && isEven) || (selectedOption === 'Ímpar' && !isEven);
                 
                 if (won) { 
-                    let win = bet * 1.95;
-                    balance += win; 
-                    document.getElementById('status-msg').innerText = `VENCEU! +$${win.toFixed(2)}`;
+                    // Se ganhar, o saldo aumenta com o lucro (ex: 1.95x a aposta)
+                    let profit = bet * 0.95; 
+                    balance += profit; 
+                    document.getElementById('status-msg').innerText = `VENCEU! +$${profit.toFixed(2)}`;
                     document.getElementById('status-msg').style.color = "var(--accent-gold)";
                 } else { 
+                    // Se perder, a aposta é descontada agora
+                    balance -= bet; 
                     document.getElementById('status-msg').innerText = "PERDEU!"; 
                     document.getElementById('status-msg').style.color = "var(--primary-red)";
                 }
-                bet = 0; 
+                
+                bet = 0; // Reseta aposta após a rodada
                 updateUI();
             }, 600);
         }
 
-        // Início
-        setGame('dice');
-        updateUI();
-    </script>
-</body>
-</html>
+        /* LÓGICA MINES ATUALIZADA */
+        function startMines() {
+            if (bet <= 0 || balance < bet) {
+                document.getElementById('status-msg').innerText = "Aposta Inválida!";
+                return;
+            }
+            
+            // Note que NÃO descontamos o balance aqui.
+            // O valor fica "preso" no jogo.
+            isMinesActive = true; 
+            minesFound = 0;
+            mineLocations = [];
+            
+            const numBombs = parseInt(document.getElementById('bomb-range').value);
+            while (mineLocations.length < numBombs) {
+                let r = Math.floor(Math.random() * 25);
+                if (!mineLocations.includes(r)) mineLocations.push(r);
+            }
+            
+            document.getElementById('main-action-btn').innerText = "CASH OUT";
+            document.getElementById('bomb-range').disabled = true;
+            document.getElementById('status-msg').innerText = "BOA SORTE!";
+            document.getElementById('status-msg').style.color = "white";
+        }
+
+        function cashOutMines() {
+            if (minesFound === 0) return;
+            
+            let mult = calculateMinesMultiplier();
+            let profit = (bet * mult) - bet; // Calculamos apenas o lucro líquido em cima da aposta
+            balance += profit; 
+            
+            endMines(`GANHOU: $${(bet * mult).toFixed(2)}`, "var(--accent-gold)");
+        }
+
+        function gameOverMines() { 
+            balance -= bet; // Perdeu? Agora o saldo diminui.
+            endMines("BUM! VOCÊ PERDEU.", "var(--primary-red)"); 
+        }
