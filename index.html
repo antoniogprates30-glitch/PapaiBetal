@@ -3,150 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RedLuck - Pirate & Casino Edition</title>
+    <title>RedLuck - Pirate Edition</title>
     <style>
         :root {
             --primary-red: #e74c3c;
             --accent-gold: #f1c40f;
-            --bg-dark: #0f0f0f;
-            --card-bg: #1a1a1a;
+            --bg-dark: #0a0a0a;
+            --card-bg: #151515;
             --pill-radius: 50px;
-            --fire-color: #ff6600;
         }
 
         body {
-            margin: 0; font-family: 'Segoe UI', sans-serif;
+            margin: 0; font-family: 'Segoe UI', Roboto, sans-serif;
             background-color: var(--bg-dark); color: white;
             display: flex; height: 100vh; overflow: hidden;
         }
 
         /* SIDEBAR */
         .sidebar {
-            width: 240px; background: #151515; border-right: 2px solid #222;
-            display: flex; flex-direction: column; padding: 20px; gap: 10px;
+            width: 260px; background: #111; border-right: 1px solid #222;
+            display: flex; flex-direction: column; padding: 25px; gap: 10px;
         }
-        .sidebar h2 { color: var(--primary-red); text-align: center; letter-spacing: 2px; margin-bottom: 20px; }
+        .sidebar h2 { color: var(--primary-red); text-align: center; letter-spacing: 3px; margin-bottom: 30px; }
         .sidebar button {
-            background: transparent; border: none; color: #777; padding: 12px;
+            background: transparent; border: none; color: #555; padding: 14px;
             text-align: left; cursor: pointer; border-radius: 12px; transition: 0.3s;
-            font-weight: bold; font-size: 0.9rem;
+            font-weight: bold; font-size: 0.95rem;
         }
         .sidebar button.active { background: var(--primary-red); color: white; }
-        .sidebar button:hover:not(.active) { background: #222; color: white; }
+        .sidebar button:hover:not(.active) { background: #1a1a1a; color: white; }
 
         /* MAIN CONTENT */
         .main-content { flex-grow: 1; display: flex; padding: 30px; gap: 20px; position: relative; }
 
-        /* HUD & BALANCE */
-        .top-info {
-            position: absolute; top: 20px; right: 40px; display: flex; gap: 15px; z-index: 100;
-        }
+        /* HUD */
+        .top-info { position: absolute; top: 20px; right: 40px; display: flex; gap: 15px; z-index: 100; }
         .hud-item {
-            background: #1a1a1a; padding: 10px 25px; border-radius: 50px;
-            border: 2px solid var(--primary-red); font-weight: bold; font-size: 1.2rem;
-        }
-        .streak-badge {
-            border-color: var(--fire-color); color: var(--fire-color); display: none;
-            animation: glow 1s infinite alternate;
+            background: #151515; padding: 10px 25px; border-radius: 50px;
+            border: 1px solid var(--primary-red); font-weight: bold; font-size: 1.1rem;
         }
 
         /* BET PANEL */
         .bet-panel {
-            width: 320px; background: #1a1a1a; padding: 20px; border-radius: 20px;
-            display: flex; flex-direction: column; gap: 15px; border: 1px solid #333;
-            z-index: 10;
+            width: 300px; background: var(--card-bg); padding: 20px; border-radius: 20px;
+            display: flex; flex-direction: column; gap: 15px; border: 1px solid #222;
         }
         .display-bet {
             background: #000; padding: 15px; border-radius: 15px; text-align: center;
-            border: 1px solid #444;
+            border: 1px solid #333;
         }
         .display-bet span { font-size: 1.8rem; color: var(--accent-gold); font-weight: bold; }
 
         .pill-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
         .btn-pill {
-            background: #333; border: 2px solid transparent; color: white; padding: 10px;
+            background: #222; border: 2px solid transparent; color: white; padding: 12px;
             border-radius: var(--pill-radius); cursor: pointer; font-weight: bold; transition: 0.2s;
         }
-        .btn-pill:hover { background: #444; }
-        .btn-pill.selected { 
-            border-color: var(--accent-gold); 
-            background: #444; 
-            box-shadow: 0 0 10px rgba(241, 196, 15, 0.3);
-        }
-        .btn-clear { background: #c0392b; grid-column: span 2; }
+        .btn-pill.selected { border-color: var(--accent-gold); background: #2a2a2a; }
+        .btn-clear { background: #8e1e13; grid-column: span 2; margin-top: 5px; }
 
         /* GAME AREA */
         .game-area {
-            flex-grow: 1; background: #111; border-radius: 25px; position: relative;
+            flex-grow: 1; background: #000; border-radius: 25px; position: relative;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            border: 2px solid #222; overflow: hidden;
+            border: 1px solid #1a1a1a; overflow: hidden;
         }
 
-        /* MINES GRID */
-        .mines-grid {
-            display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;
+        /* MINES DESIGN CORRIGIDO */
+        .mines-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+        .mine-btn {
+            width: 60px; height: 60px; background: #111; border: 1px solid #222;
+            border-radius: 12px; cursor: pointer; display: flex; align-items: center;
+            justify-content: center; color: #444; font-size: 1.5rem; transition: 0.2s;
         }
+        .mine-btn:hover { border-color: #555; background: #151515; }
 
-        /* PIRATE SHIP (CSS & SVG) */
-        #pirate-scene {
-            display: none; flex-direction: column; align-items: center; width: 100%; height: 300px; position: relative;
-        }
-        .ship-container {
-            position: absolute; bottom: 20px; transition: all 0.1s linear;
-        }
-        .ship-svg {
-            width: 100px; fill: white; filter: drop-shadow(0 0 5px rgba(255,255,255,0.3));
-        }
-        .sea { 
-            position: absolute; bottom: 0; width: 100%; height: 15px; 
-            background: linear-gradient(transparent, #2980b9); border-radius: 10px; 
-        }
-        .multiplier-text { font-size: 5rem; font-weight: bold; color: var(--accent-gold); z-index: 5; margin-bottom: 50px; }
-
-        /* DICE ANIMATION */
-        .dice-roll { animation: roll 0.5s infinite; }
-        @keyframes roll {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        /* NAVIO E TRAJETÓRIA */
+        #pirate-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+        .ship-container { position: absolute; z-index: 10; width: 70px; transition: transform 0.1s linear; }
+        .multiplier-text { font-size: 5rem; font-weight: bold; color: var(--accent-gold); z-index: 5; margin-top: -100px; }
 
         .btn-action {
-            width: 100%; padding: 15px; border-radius: var(--pill-radius);
+            width: 100%; padding: 18px; border-radius: var(--pill-radius);
             border: none; background: var(--primary-red); color: white;
-            font-size: 1.2rem; font-weight: bold; cursor: pointer; margin-top: 10px;
-            transition: 0.2s;
+            font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: 0.2s;
         }
-        .btn-action:active { transform: scale(0.98); }
-        .btn-action:disabled { background: #444; cursor: not-allowed; }
-
-        @keyframes glow {
-            from { box-shadow: 0 0 5px var(--fire-color); }
-            to { box-shadow: 0 0 20px var(--fire-color); }
-        }
+        .btn-action:active { transform: scale(0.96); }
 
         .hidden { display: none !important; }
+        #status-msg { margin-top: 20px; font-weight: bold; font-size: 1.2rem; height: 24px; text-transform: uppercase; letter-spacing: 1px; }
     </style>
 </head>
 <body>
 
     <div class="top-info">
-        <div id="streak-indicator" class="hud-item streak-badge">🔥 STREAK: <span id="streak-val">0</span></div>
         <div class="hud-item">$ <span id="balance">1000</span></div>
     </div>
 
     <nav class="sidebar">
         <h2>REDLUCK</h2>
-        <button id="btn-dice" class="active" onclick="setGame('dice')">🎲 Dados</button>
-        <button id="btn-coin" onclick="setGame('coin')">🪙 Cara ou Coroa</button>
-        <button id="btn-mines" onclick="setGame('mines')">💣 Mines</button>
-        <button id="btn-pirate" onclick="setGame('pirate')">🚢 Navio Pirata</button>
-        <button id="btn-luck" class="hidden" onclick="setGame('luck')" style="color:var(--accent-gold)">🎡 Roda LUCK</button>
+        <button id="btn-dice" class="active" onclick="setGame('dice')">🎲 DADOS</button>
+        <button id="btn-coin" onclick="setGame('coin')">🪙 CARA OU COROA</button>
+        <button id="btn-mines" onclick="setGame('mines')">💣 MINES</button>
+        <button id="btn-pirate" onclick="setGame('pirate')">🚢 NAVIO PIRATA</button>
     </nav>
 
     <main class="main-content">
         <section class="bet-panel">
             <div class="display-bet">
-                <label style="color:#666; font-size:0.7rem">APOSTA ATUAL</label><br>
+                <label style="color:#555; font-size:0.7rem; font-weight:bold">APOSTA</label><br>
                 $<span id="bet-amount">0</span>
             </div>
             
@@ -155,81 +120,54 @@
                 <button class="btn-pill" onclick="modBet(10)">+10</button>
                 <button class="btn-pill" onclick="modBet(50)">+50</button>
                 <button class="btn-pill" onclick="modBet(100)">+100</button>
-                <button class="btn-pill btn-clear" onclick="clearBet()">Zerar</button>
+                <button class="btn-pill btn-clear" onclick="clearBet()">ZERAR</button>
             </div>
 
-            <div id="game-options" class="pill-grid">
-                </div>
+            <div id="game-options" class="pill-grid"></div>
 
             <button id="main-action-btn" class="btn-action" onclick="handleAction()">JOGAR</button>
         </section>
 
         <section class="game-area">
-            <div id="simple-visual" style="font-size: 8rem; transition: 0.3s;">🎲</div>
+            <canvas id="pirate-canvas"></canvas>
+            
+            <div id="simple-visual" style="font-size: 8rem;">🎲</div>
 
             <div id="mines-container" class="mines-grid hidden"></div>
 
-            <div id="pirate-scene">
+            <div id="pirate-scene" class="hidden" style="flex-direction: column; align-items: center; width: 100%; height: 100%;">
                 <div class="multiplier-text" id="crash-mult">1.00x</div>
                 <div class="ship-container" id="ship-wrapper">
-                    <svg class="ship-svg" viewBox="0 0 64 64">
-                        <path d="M10 40 L54 40 L48 52 L16 52 Z M32 10 L32 40 M32 15 L50 30 L32 30 Z" stroke="white" stroke-width="2" fill="none"/>
-                    </svg>
+                    <svg viewBox="0 0 64 64"><path d="M10 40 L54 40 L48 52 L16 52 Z M32 10 L32 40 M32 15 L50 30 L32 30 Z" stroke="white" stroke-width="2" fill="none"/></svg>
                 </div>
-                <div class="sea"></div>
             </div>
 
-            <div id="status-msg" style="margin-top: 20px; font-weight: bold; font-size: 1.5rem; height: 30px;"></div>
+            <div id="status-msg"></div>
         </section>
     </main>
 
     <script>
-        let balance = 1000;
-        let bet = 0;
-        let currentGame = 'dice';
-        let streak = 0;
-        let selectedOption = null;
-        
-        let crashInterval;
-        let currentMult = 1.0;
-        let isPlayingCrash = false;
+        let balance = 1000, bet = 0, currentGame = 'dice', selectedOption = null;
+        let crashInterval, currentMult = 1.0, isPlayingCrash = false, points = [];
 
         function updateUI() {
             document.getElementById('balance').innerText = Math.floor(balance - bet);
             document.getElementById('bet-amount').innerText = bet;
-            const streakBadge = document.getElementById('streak-indicator');
-            if(streak >= 3) {
-                streakBadge.style.display = 'block';
-                document.getElementById('streak-val').innerText = streak;
-            } else {
-                streakBadge.style.display = 'none';
-            }
         }
 
-        function modBet(val) {
-            if (balance >= bet + val) { bet += val; updateUI(); }
-        }
-
+        function modBet(val) { if (balance >= bet + val) { bet += val; updateUI(); } }
         function clearBet() { bet = 0; updateUI(); }
 
-        function selectGameOption(opt, btn) {
-            selectedOption = opt;
-            document.querySelectorAll('#game-options .btn-pill').forEach(b => b.classList.remove('selected'));
-            btn.classList.add('selected');
-        }
-
         function setGame(game) {
-            currentGame = game;
-            selectedOption = null;
+            currentGame = game; selectedOption = null;
             document.querySelectorAll('.sidebar button').forEach(b => b.classList.remove('active'));
             document.getElementById('btn-' + game).classList.add('active');
             
-            // Reset Visuals
             document.getElementById('simple-visual').classList.add('hidden');
             document.getElementById('mines-container').classList.add('hidden');
-            document.getElementById('pirate-scene').style.display = 'none';
+            document.getElementById('pirate-scene').classList.add('hidden');
             document.getElementById('status-msg').innerText = "";
-            document.getElementById('main-action-btn').innerText = "JOGAR";
+            document.getElementById('main-action-btn').innerText = (game === 'pirate') ? "ZARPAR" : "JOGAR";
             
             const optCont = document.getElementById('game-options');
             optCont.innerHTML = "";
@@ -241,14 +179,16 @@
                 options.forEach(o => {
                     let b = document.createElement('button');
                     b.className = 'btn-pill'; b.innerText = o;
-                    b.onclick = () => selectGameOption(o, b);
+                    b.onclick = () => {
+                        selectedOption = o;
+                        document.querySelectorAll('#game-options .btn-pill').forEach(btn => btn.classList.remove('selected'));
+                        b.classList.add('selected');
+                    };
                     optCont.appendChild(b);
                 });
             } else if(game === 'pirate') {
-                document.getElementById('pirate-scene').style.display = 'flex';
-                document.getElementById('main-action-btn').innerText = "ZARPAR";
-                document.getElementById('crash-mult').innerText = "1.00x";
-                resetShip();
+                document.getElementById('pirate-scene').classList.remove('hidden');
+                resetPirate();
             } else if(game === 'mines') {
                 document.getElementById('mines-container').classList.remove('hidden');
                 initMines();
@@ -256,136 +196,107 @@
         }
 
         function handleAction() {
-            if(bet <= 0) return showStatus("Aposte um valor!", "yellow");
-
+            if(bet <= 0) return;
             if(currentGame === 'pirate') {
-                if(!isPlayingCrash) startCrash();
-                else stopCrash();
-            } else if(currentGame === 'dice' || currentGame === 'coin') {
-                playSimpleGame();
+                if(!isPlayingCrash) startCrash(); else stopCrash();
+            } else {
+                playSimple();
             }
         }
 
-        function showStatus(msg, color) {
-            const el = document.getElementById('status-msg');
-            el.innerText = msg;
-            el.style.color = color || "white";
+        // --- PIRATE LOGIC ---
+        function resetPirate() {
+            currentMult = 1.0; points = [];
+            document.getElementById('crash-mult').innerText = "1.00x";
+            const canvas = document.getElementById('pirate-canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const ship = document.getElementById('ship-wrapper');
+            ship.style.left = "50px"; ship.style.bottom = "50px"; ship.style.top = "auto";
         }
 
-        // --- PIRATE CRASH REFEITO ---
-        function resetShip() {
-            const ship = document.getElementById('ship-wrapper');
-            ship.style.bottom = "20px";
-            ship.style.left = "20px";
-            ship.style.transform = "rotate(0deg)";
+        function drawTrail() {
+            const canvas = document.getElementById('pirate-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
+            ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 3; ctx.beginPath();
+            points.forEach((p, i) => { if(i===0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y); });
+            ctx.stroke();
         }
 
         function startCrash() {
-            isPlayingCrash = true;
-            currentMult = 1.0;
-            balance -= bet;
+            isPlayingCrash = true; balance -= bet; resetPirate();
             document.getElementById('main-action-btn').innerText = "RESGATAR";
-            showStatus("Navegando...", "#3498db");
-            
-            let crashPoint = (Math.random() * 4 + 1.1); 
+            let crashPoint = Math.random() * 3 + 1.1;
 
             crashInterval = setInterval(() => {
                 currentMult += 0.01;
                 document.getElementById('crash-mult').innerText = currentMult.toFixed(2) + "x";
-                
-                // Movimento Logarítmico (Sobe aos poucos)
+                const canvas = document.getElementById('pirate-canvas');
                 const ship = document.getElementById('ship-wrapper');
-                const x = (currentMult - 1) * 80; // Avanço lateral
-                const y = Math.log(currentMult) * 150; // Subida logarítmica
-                const tilt = Math.sin(currentMult * 10) * 5; // Balanço suave
 
-                ship.style.left = `calc(20px + ${x}px)`;
-                ship.style.bottom = `calc(20px + ${y}px)`;
-                ship.style.transform = `rotate(${tilt}deg)`;
+                const x = (currentMult - 1) * 120 + 50;
+                const y = canvas.height - (Math.log(currentMult) * 250 + 80);
+                
+                ship.style.left = `${x}px`; ship.style.top = `${y}px`;
+                points.push({x: x + 35, y: y + 50});
+                drawTrail();
 
-                if(currentMult >= crashPoint) {
-                    gameOverCrash();
-                }
-            }, 50);
+                if(currentMult >= crashPoint) gameOverCrash();
+            }, 60);
         }
 
         function stopCrash() {
-            clearInterval(crashInterval);
-            isPlayingCrash = false;
-            let win = bet * currentMult;
-            balance += win;
-            streak++;
-            showStatus(`TESOURO: $${win.toFixed(2)}`, "#2ecc71");
+            clearInterval(crashInterval); isPlayingCrash = false;
+            let win = bet * currentMult; balance += win;
+            document.getElementById('status-msg').innerText = "GANHOU: $" + win.toFixed(2);
             document.getElementById('main-action-btn').innerText = "ZARPAR";
-            bet = 0;
-            updateUI();
+            bet = 0; updateUI();
         }
 
         function gameOverCrash() {
-            clearInterval(crashInterval);
-            isPlayingCrash = false;
-            streak = 0;
-            showStatus("O NAVIO AFUNDOU!", "#e74c3c");
-            document.getElementById('ship-wrapper').style.transform = "scale(0) rotate(180deg)";
-            setTimeout(() => {
-                resetShip();
-                document.getElementById('ship-wrapper').style.transform = "scale(1)";
-            }, 1000);
+            clearInterval(crashInterval); isPlayingCrash = false;
+            document.getElementById('status-msg').innerText = "NAVIO AFUNDOU!";
             document.getElementById('main-action-btn').innerText = "ZARPAR";
-            bet = 0;
-            updateUI();
+            bet = 0; updateUI();
         }
 
-        // --- DADOS E MOEDA ---
-        function playSimpleGame() {
-            if(!selectedOption) return showStatus("Selecione uma opção!", "yellow");
-            
+        // --- SIMPLE GAMES ---
+        function playSimple() {
+            if(!selectedOption) return;
+            balance -= bet;
             const visual = document.getElementById('simple-visual');
-            visual.classList.add('dice-roll');
-            
+            visual.style.transform = "rotate(360deg)";
             setTimeout(() => {
-                visual.classList.remove('dice-roll');
-                balance -= bet;
-                
-                let win = false;
+                visual.style.transform = "rotate(0deg)";
+                let won = false;
                 if(currentGame === 'dice') {
                     let res = Math.floor(Math.random() * 6) + 1;
                     visual.innerText = res;
-                    win = (selectedOption === 'Par' && res % 2 === 0) || (selectedOption === 'Ímpar' && res % 2 !== 0);
+                    won = (selectedOption === 'Par' && res % 2 === 0) || (selectedOption === 'Ímpar' && res % 2 !== 0);
                 } else {
                     let res = Math.random() > 0.5 ? 'Cara' : 'Coroa';
-                    visual.innerText = res === 'Cara' ? '🌞' : '🌛';
-                    win = (selectedOption === res);
+                    visual.innerText = (res === 'Cara') ? '🌞' : '🌛';
+                    won = (selectedOption === res);
                 }
-
-                if(win) {
-                    let prize = bet * 2;
-                    balance += prize;
-                    streak++;
-                    showStatus("GANHOU! +$" + prize, "#2ecc71");
-                } else {
-                    streak = 0;
-                    showStatus("PERDEU!", "#e74c3c");
-                }
-                bet = 0;
-                updateUI();
-            }, 600);
+                if(won) { balance += bet * 2; document.getElementById('status-msg').innerText = "VENCEU!"; }
+                else { document.getElementById('status-msg').innerText = "PERDEU!"; }
+                bet = 0; updateUI();
+            }, 500);
         }
 
+        // --- MINES ---
         function initMines() {
-            const cont = document.getElementById('mines-container');
-            cont.innerHTML = "";
+            const cont = document.getElementById('mines-container'); cont.innerHTML = "";
             for(let i=0; i<25; i++) {
                 let b = document.createElement('button');
-                b.className = 'mine-btn';
-                b.innerText = "❓";
-                b.onclick = () => showStatus("Mecânica Mines em breve!", "#f1c40f");
+                b.className = 'mine-btn'; b.innerHTML = "★";
+                b.onclick = () => { b.style.color = "var(--accent-gold)"; b.style.borderColor = "var(--accent-gold)"; };
                 cont.appendChild(b);
             }
         }
 
-        setGame('dice');
-        updateUI();
+        setGame('dice'); updateUI();
     </script>
 </body>
 </html>
